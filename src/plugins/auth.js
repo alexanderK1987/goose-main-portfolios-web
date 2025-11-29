@@ -44,7 +44,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Check if the error is 401 and it hasn't been retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
       // A. Handle concurrent refresh attempts (Queue the request)
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -68,7 +68,7 @@ api.interceptors.response.use(
       // If no refresh token exists, immediately redirect to login
       if (!refreshToken) {
         isRefreshing = false;
-        router.push('/login');
+        router.push('/pages/login');
 
         return Promise.reject(error);
       }
@@ -97,7 +97,7 @@ api.interceptors.response.use(
         localStorage.removeItem(siteConfig.tokenStorageKey);
         localStorage.removeItem(siteConfig.refreshTokenStorageKey);
         processQueue(_error, null);
-        router.push('/login');
+        router.push('/pages/login');
 
         return Promise.reject(_error);
       } finally {

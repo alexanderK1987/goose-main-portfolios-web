@@ -1,7 +1,8 @@
 const { mergeSassVariables } = require('@vuetify/cli-plugin-utils');
 
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production' ? '/demo/materio-vuetify-vuejs-admin-template-free/demo' : '/',
+  // path set according to nginx serving location path
+  publicPath: process.env.NODE_ENV === 'production' ? '/goose-tracker' : '/',
   transpileDependencies: ['vuetify'],
   chainWebpack: config => {
     const modules = ['vue-modules', 'vue', 'normal-modules', 'normal'];
