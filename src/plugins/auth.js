@@ -1,6 +1,6 @@
 import axios from 'axios';
 import router from '@/router';
-import siteConfig from '@/.siteConfig'; // Assumes config is set up
+import siteConfig from '@/../.siteConfig';
 
 // --- 1. Axios Instance Configuration ---
 const api = axios.create({
@@ -14,11 +14,8 @@ let failedQueue = [];
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
+    if (error) prom.reject(error);
+    else prom.resolve(token);
   });
   failedQueue = [];
 };

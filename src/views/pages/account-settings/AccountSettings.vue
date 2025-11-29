@@ -1,18 +1,16 @@
 <template>
   <v-card id="account-setting-card">
-    <!-- tabs -->
-    <v-tabs
-      v-model="tab"
-      show-arrows
+    <v-snackbar
+      v-model="snackbarProps.visible"
+      :timeout="snackbarProps.timeout"
+      :color="snackbarProps.color"
     >
-      <v-tab
-        v-for="tab in tabs"
-        :key="tab.icon"
-      >
-        <v-icon
-          size="20"
-          class="me-3"
-        >
+      {{ snackbarProps.content }}
+    </v-snackbar>
+    <!-- tabs -->
+    <v-tabs v-model="tab">
+      <v-tab v-for="tab in tabs" :key="tab.icon">
+        <v-icon class="me-2">
           {{ tab.icon }}
         </v-icon>
         <span>{{ tab.title }}</span>
@@ -21,78 +19,160 @@
 
     <!-- tabs item -->
     <v-tabs-items v-model="tab">
-      <v-tab-item>
-        <account-settings-account :account-data="accountSettingData.account" />
+      <v-tab-item class="py-2">
+        <account-settings-profile
+          v-model="profileForm"
+          :loading="loading"
+          @update="updateProfile()"
+          @reset="resetProfile()"
+        />
       </v-tab-item>
-
-      <v-tab-item>
-        <account-settings-security />
-      </v-tab-item>
-
-      <v-tab-item>
-        <account-settings-info :information-data="accountSettingData.information" />
+      <v-tab-item class="py-2">
+        <account-settings-security
+          v-model="securityForm"
+          :loading="loading"
+          @update="changePassword()"
+          @reset="clearPasswordForm()"
+        />
       </v-tab-item>
     </v-tabs-items>
   </v-card>
 </template>
 
 <script>
-import { mdiAccountOutline, mdiLockOpenOutline, mdiInformationOutline } from '@mdi/js';
-import { ref } from '@vue/composition-api';
+import { mdiAccountOutline, mdiLockOpenOutline } from '@mdi/js';
+import siteConfig from '@/../.siteConfig';
 
 // demos
-import AccountSettingsAccount from './AccountSettingsAccount.vue';
+import AccountSettingsProfile from './AccountSettingsProfile.vue';
 import AccountSettingsSecurity from './AccountSettingsSecurity.vue';
-import AccountSettingsInfo from './AccountSettingsInfo.vue';
+import { snakeToCamel, camelToSnake } from '@/utils/snakeCamelTools';
+
+const makeEmptyProfile = () => ({
+  nickname: '----',
+  email: '----.---@-------.----.---',
+  isAdmin: false,
+  isActive: false,
+});
+const makeEmptyPasswordResetForm = () => ({
+  oldPassword: '',
+  newPassword: '',
+  checkPassword: '',
+});
 
 export default {
   components: {
-    AccountSettingsAccount,
+    AccountSettingsProfile,
     AccountSettingsSecurity,
-    AccountSettingsInfo,
   },
-  setup() {
-    const tab = ref('');
 
-    // tabs
-    const tabs = [
-      { title: 'Account', icon: mdiAccountOutline },
+  data: () => ({
+    loading: false,
+    tab: 0,
+    tabs: [
+      { title: 'Profile', icon: mdiAccountOutline },
       { title: 'Security', icon: mdiLockOpenOutline },
-      { title: 'Info', icon: mdiInformationOutline },
-    ];
+    ],
+    profileForm: makeEmptyProfile(),
+    securityForm: makeEmptyPasswordResetForm(),
+    snackbarProps: {
+      timeout: 1.5e3,
+      visible: false,
+      content: '',
+      color: 'primary',
+    },
+    snakeToCamel,
+  }),
 
-    // account settings data
-    const accountSettingData = {
-      account: {
-        avatarImg: require('@/assets/images/avatars/1.png'),
-        username: 'johnDoe',
-        name: 'john Doe',
-        email: 'johnDoe@example.com',
-        role: 'Admin',
-        status: 'Active',
-        company: 'Google.inc',
-      },
-      information: {
-        bio: 'The name’s John Deo. I am a tireless seeker of knowledge, occasional purveyor of wisdom and also, coincidentally, a graphic designer. Algolia helps businesses across industries quickly create relevant 😎, scaLabel 😀, and lightning 😍 fast search and discovery experiences.',
-        birthday: 'February 22, 1995',
-        phone: '954-006-0844',
-        website: 'https://themeselection.com/',
-        country: 'USA',
-        languages: ['English', 'Spanish'],
-        gender: 'male',
-      },
-    };
+  watch: {
+    tab(value) {
+      window.location.hash = this.tabs[value]?.title;
+    },
+  },
 
-    return {
-      tab,
-      tabs,
-      accountSettingData,
-      icons: {
-        mdiAccountOutline,
-        mdiLockOpenOutline,
-        mdiInformationOutline,
-      },
-    };
+  created() {
+    this.detectUrlFragment();
+    this.getProfile();
+  },
+
+  methods: {
+    detectUrlFragment() {
+      const { hash } = window.location;
+      if (hash) {
+        this.tab = this?.tabs?.findIndex(tab => tab.title === hash.substring(1)) || 0;
+      }
+    },
+    updateUrlFragment(newTabTitle) {
+      window.location.hash = newTabTitle.toLowerCase();
+    },
+    async getProfile() {
+      this.loading = true;
+      try {
+        const PROFILE_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userProfile}`;
+
+        // Call the API endpoint
+        const response = await this.$api.get(PROFILE_URL);
+        this.profileForm = snakeToCamel(response.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        this.loading = false;
+      }
+    },
+    async updateProfile() {
+      this.loading = true;
+      const PROFILE_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userProfile}`;
+
+      try {
+        // Call the API endpoint
+        const { email, nickname } = camelToSnake(this.profileForm);
+        const response = await this.$api.patch(PROFILE_URL, { email, nickname });
+        this.profileForm = snakeToCamel(response.data);
+        this.snackbarProps.visible = true;
+        this.snackbarProps.color = 'success';
+        this.snackbarProps.content = 'Success!';
+      } catch (err) {
+        this.snackbarProps.visible = true;
+        this.snackbarProps.color = 'error';
+        const detailMessage = Array.isArray(err?.response?.data?.detail)
+          ? err?.response?.data?.detail[0]?.msg : err?.response?.data?.detail;
+        this.snackbarProps.content = `Update failed. ${detailMessage || ''}`;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async resetProfile() {
+      await this.getProfile();
+    },
+    clearPasswordForm() {
+      this.securityForm = makeEmptyPasswordResetForm();
+    },
+    async changePassword() {
+      const CHPWD_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userChangePassword}`;
+      this.loading = true;
+      try {
+        // Call the API endpoint
+        const requestBody = {
+          newPassword: this.securityForm.newPassword,
+          oldPassword: this.securityForm.oldPassword,
+        };
+        await this.$api.patch(CHPWD_URL, camelToSnake(requestBody));
+
+        this.snackbarProps.visible = true;
+        this.snackbarProps.color = 'success';
+        this.snackbarProps.content = 'Success!';
+        this.clearPasswordForm();
+      } catch (err) {
+        console.log(err.response.data);
+        this.snackbarProps.visible = true;
+        this.snackbarProps.color = 'error';
+        const detailMessage = Array.isArray(err?.response?.data?.detail)
+          ? err?.response?.data?.detail[0]?.msg : err?.response?.data?.detail;
+        this.snackbarProps.content = `Update failed. ${detailMessage || ''}`;
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 };
 </script>

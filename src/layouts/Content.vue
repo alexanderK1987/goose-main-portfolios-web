@@ -62,18 +62,16 @@
       inset
       color="transparent"
       absolute
-      height="56"
+      height="48"
       class="px-0"
     >
       <div class="boxed-container w-full">
-        <div class="mx-6 d-flex justify-space-between">
+        <div class="mx-6 d-flex justify-space-between caption align-center">
           <span>
-            &copy; 2021
-            <a
-              href="https://themeselection.com"
-              class="text-decoration-none"
-              target="_blank"
-            >ThemeSelection</a></span>
+            &copy;2025
+            <v-icon small class="me-n1 flip-horizontal">{{ icons.mdiKnife }}</v-icon>
+            Goooooose
+          </span>
           <span class="d-sm-inline d-none">
             <a
               href="https://themeselection.com/products/category/download-free-admin-templates/"
@@ -99,7 +97,9 @@
 
 <script>
 import { ref } from '@vue/composition-api';
-import { mdiMagnify, mdiBellOutline, mdiGithub } from '@mdi/js';
+import {
+  mdiMagnify, mdiBellOutline, mdiGithub, mdiKnife,
+} from '@mdi/js';
 import VerticalNavMenu from './components/vertical-nav-menu/VerticalNavMenu.vue';
 import ThemeSwitcher from './components/ThemeSwitcher.vue';
 import AppBarUserMenu from './components/AppBarUserMenu.vue';
@@ -121,6 +121,7 @@ export default {
         mdiMagnify,
         mdiBellOutline,
         mdiGithub,
+        mdiKnife,
       },
     };
   },
@@ -144,5 +145,12 @@ export default {
   max-width: 1440px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.flip-horizontal {
+  /* Applies a mirror effect along the vertical axis */
+  transform: scaleX(-1);
+  /* Ensure the icon rotates from its center */
+  transform-origin: center;
 }
 </style>

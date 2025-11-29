@@ -1,51 +1,52 @@
 <template>
-  <v-card
-    flat
-    class="mt-5"
-  >
+  <v-card flat :disabled="loading">
     <v-form>
       <div class="px-3">
         <v-card-text class="pt-5">
           <v-row>
-            <v-col
-              cols="12"
-              sm="8"
-              md="6"
-            >
+            <v-col cols="12" class="d-flex justify-start align-center">
+              <div class="font-weight-bold pe-3">
+                Change Password
+              </div>
+            </v-col>
+            <v-col cols="12" sm="8" md="6">
               <!-- current password -->
               <v-text-field
-                v-model="currentPassword"
-                :type="isCurrentPasswordVisible ? 'text' : 'password'"
-                :append-icon="isCurrentPasswordVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
+                v-model="value.oldPassword"
+                :type="oldVisible ? 'text' : 'password'"
+                :append-icon="oldVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
+                :rules="[required]"
                 label="Current Password"
                 outlined
                 dense
-                @click:append="isCurrentPasswordVisible = !isCurrentPasswordVisible"
+                @click:append="oldVisible = !oldVisible"
               />
+
+              <v-divider class="mb-4 mt-2" />
 
               <!-- new password -->
               <v-text-field
-                v-model="newPassword"
-                :type="isNewPasswordVisible ? 'text' : 'password'"
-                :append-icon="isNewPasswordVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
+                v-model="value.newPassword"
+                :type="newVisible ? 'text' : 'password'"
+                :append-icon="newVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
+                :rules="[required]"
                 label="New Password"
                 outlined
                 dense
-                hint="Make sure it's at least 8 characters."
-                persistent-hint
-                @click:append="isNewPasswordVisible = !isNewPasswordVisible"
+                @click:append="newVisible = !newVisible"
               />
 
               <!-- confirm password -->
               <v-text-field
-                v-model="cPassword"
-                :type="isCPasswordVisible ? 'text' : 'password'"
-                :append-icon="isCPasswordVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
+                v-model="value.checkPassword"
+                :type="checkVisible ? 'text' : 'password'"
+                :append-icon="checkVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
+                :rules="[required, doubleCheck]"
                 label="Confirm New Password"
                 outlined
                 dense
                 class="mt-3"
-                @click:append="isCPasswordVisible = !isCPasswordVisible"
+                @click:append="checkVisible = !checkVisible"
               />
             </v-col>
 
@@ -53,64 +54,32 @@
               cols="12"
               sm="4"
               md="6"
-              class="d-none d-sm-flex justify-center position-relative"
+              class="d-none d-sm-flex justify-end py-6"
             >
+              <v-spacer />
               <v-img
-                contain
-                max-width="170"
-                src="@/assets/images/3d-characters/pose-m-1.png"
-                class="security-character"
+                max-height="170"
+                src="@/assets/images/logos/goose-logo.svg"
+                class="security-character me-n12"
               />
             </v-col>
           </v-row>
         </v-card-text>
-      </div>
-
-      <!-- divider -->
-      <v-divider />
-
-      <div class="pa-3">
-        <v-card-title class="flex-nowrap">
-          <v-icon class="text--primary me-3">
-            {{ icons.mdiKeyOutline }}
-          </v-icon>
-          <span class="text-break">Two-factor authentication</span>
-        </v-card-title>
-
-        <v-card-text class="two-factor-auth text-center mx-auto">
-          <v-avatar
-            color="primary"
-            class="primary mb-4"
-            rounded
-          >
-            <v-icon
-              size="25"
-              color="white"
-            >
-              {{ icons.mdiLockOpenOutline }}
-            </v-icon>
-          </v-avatar>
-          <p class="text-base text--primary font-weight-semibold">
-            Two factor authentication is not enabled yet.
-          </p>
-          <p class="text-sm text--primary">
-            Two-factor authentication adds an additional layer of security to your account by requiring more than just a
-            password to log in. Learn more.
-          </p>
-        </v-card-text>
 
         <!-- action buttons -->
-        <v-card-text>
+        <v-card-text class="d-flex justify-end">
           <v-btn
             color="primary"
             class="me-3 mt-3"
+            @click="$emit('update')"
           >
-            Save changes
+            Update
           </v-btn>
           <v-btn
             color="secondary"
             outlined
             class="mt-3"
+            @click="$emit('reset')"
           >
             Cancel
           </v-btn>
@@ -123,41 +92,37 @@
 <script>
 // eslint-disable-next-line object-curly-newline
 import { mdiKeyOutline, mdiLockOpenOutline, mdiEyeOffOutline, mdiEyeOutline } from '@mdi/js';
-import { ref } from '@vue/composition-api';
 
 export default {
-  setup() {
-    const isCurrentPasswordVisible = ref(false);
-    const isNewPasswordVisible = ref(false);
-    const isCPasswordVisible = ref(false);
-    const currentPassword = ref('12345678');
-    const newPassword = ref('87654321');
-    const cPassword = ref('87654321');
-
-    return {
-      isCurrentPasswordVisible,
-      isNewPasswordVisible,
-      currentPassword,
-      isCPasswordVisible,
-      newPassword,
-      cPassword,
-      icons: {
-        mdiKeyOutline,
-        mdiLockOpenOutline,
-        mdiEyeOffOutline,
-        mdiEyeOutline,
-      },
-    };
+  props: {
+    loading: {
+      default: false,
+      type: Boolean,
+    },
+    value: {
+      default: null,
+      type: Object,
+      required: true,
+    },
+  },
+  data: () => ({
+    oldVisible: false,
+    newVisible: false,
+    checkVisible: false,
+    icons: {
+      mdiKeyOutline,
+      mdiLockOpenOutline,
+      mdiEyeOffOutline,
+      mdiEyeOutline,
+    },
+  }),
+  methods: {
+    required(v) {
+      return !!v || 'Field is required';
+    },
+    doubleCheck(v) {
+      return v === this.value.newPassword || 'Must be the same';
+    },
   },
 };
 </script>
-
-<style lang="scss" scoped>
-.two-factor-auth {
-  max-width: 25rem;
-}
-.security-character {
-  position: absolute;
-  bottom: -0.5rem;
-}
-</style>
