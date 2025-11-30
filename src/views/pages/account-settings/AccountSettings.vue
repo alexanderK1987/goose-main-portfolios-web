@@ -1,5 +1,8 @@
 <template>
   <v-card id="account-setting-card">
+    <v-card-title>
+      <h3>Account Settings</h3>
+    </v-card-title>
     <v-snackbar
       v-model="snackbarProps.visible"
       :timeout="snackbarProps.timeout"
@@ -108,10 +111,10 @@ export default {
     async getProfile() {
       this.loading = true;
       try {
-        const PROFILE_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userProfile}`;
+        const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userProfile}`;
 
         // Call the API endpoint
-        const response = await this.$api.get(PROFILE_URL);
+        const response = await this.$api.get(REQ_URL);
         this.profileForm = snakeToCamel(response.data);
       } catch (err) {
         console.error(err);
@@ -121,12 +124,12 @@ export default {
     },
     async updateProfile() {
       this.loading = true;
-      const PROFILE_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userProfile}`;
+      const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userProfile}`;
 
       try {
         // Call the API endpoint
         const { email, nickname } = camelToSnake(this.profileForm);
-        const response = await this.$api.patch(PROFILE_URL, { email, nickname });
+        const response = await this.$api.patch(REQ_URL, { email, nickname });
         this.profileForm = snakeToCamel(response.data);
         this.snackbarProps.visible = true;
         this.snackbarProps.color = 'success';

@@ -9,7 +9,9 @@
     <template v-slot:activator="{ on, attrs }">
       <v-badge bottom color="success" overlap offset-x="12" offset-y="12" class="ms-4" dot>
         <v-avatar size="40px" v-bind="attrs" v-on="on">
-          <v-icon color="primary">{{ icons.mdiAccountCircle }}</v-icon>
+          <v-icon color="primary">
+            {{ icons.mdiAccountCircle }}
+          </v-icon>
         </v-avatar>
       </v-badge>
     </template>
@@ -25,7 +27,9 @@
           dot
         >
           <v-avatar size="40px">
-            <v-icon color="primary">{{ icons.mdiAccountCircle }}</v-icon>
+            <v-icon color="primary">
+              {{ icons.mdiAccountCircle }}
+            </v-icon>
           </v-avatar>
         </v-badge>
         <div

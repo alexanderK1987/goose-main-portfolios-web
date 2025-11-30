@@ -1,7 +1,6 @@
 <template>
   <v-app>
     <vertical-nav-menu :is-drawer-open.sync="isDrawerOpen" />
-
     <v-app-bar
       app
       flat
@@ -52,7 +51,7 @@
     </v-app-bar>
 
     <v-main>
-      <div class="app-content-container boxed-container pa-6">
+      <div class="app-content-container px-4 pb-6">
         <slot />
       </div>
     </v-main>
@@ -142,7 +141,6 @@ export default {
 }
 
 .boxed-container {
-  max-width: 1440px;
   margin-left: auto;
   margin-right: auto;
 }

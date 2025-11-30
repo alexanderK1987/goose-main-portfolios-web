@@ -15,6 +15,7 @@ module.exports = {
     // recommended by Vetur
     // 'vue/html-self-closing': 'on',
     'vue/max-attributes-per-line': 'off',
+    'no-nested-ternary': 'off',
 
     // Disable max-len
     'max-len': 'off',
