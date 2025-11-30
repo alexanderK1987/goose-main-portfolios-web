@@ -6,12 +6,13 @@ Vue.use(VueRouter);
 const routes = [
   {
     path: '/',
-    redirect: 'dashboard',
+    name: 'root',
+    redirect: '/pages/dashboard',
   },
   {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: () => import('@/views/dashboard/Dashboard.vue'),
+    path: '/pages/dashboard',
+    name: 'pages-dashboard',
+    component: () => import('@/views/pages/dashboard/Dashboard.vue'),
   },
   {
     path: '/typography',

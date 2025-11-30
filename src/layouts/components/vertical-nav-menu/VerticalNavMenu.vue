@@ -39,7 +39,7 @@
     >
       <nav-menu-link
         title="Dashboard"
-        :to="{ name: 'dashboard' }"
+        :to="{ name: 'pages-dashboard' }"
         :icon="icons.mdiHomeOutline"
       />
       <nav-menu-link

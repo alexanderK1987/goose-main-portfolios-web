@@ -7,21 +7,9 @@
     content-class="user-profile-menu-content"
   >
     <template v-slot:activator="{ on, attrs }">
-      <v-badge
-        bottom
-        color="success"
-        overlap
-        offset-x="12"
-        offset-y="12"
-        class="ms-4"
-        dot
-      >
-        <v-avatar
-          size="40px"
-          v-bind="attrs"
-          v-on="on"
-        >
-          <v-img :src="require('@/assets/images/avatars/1.png')" />
+      <v-badge bottom color="success" overlap offset-x="12" offset-y="12" class="ms-4" dot>
+        <v-avatar size="40px" v-bind="attrs" v-on="on">
+          <v-icon color="primary">{{ icons.mdiAccountCircle }}</v-icon>
         </v-avatar>
       </v-badge>
     </template>
@@ -37,7 +25,7 @@
           dot
         >
           <v-avatar size="40px">
-            <v-img :src="require('@/assets/images/avatars/1.png')" />
+            <v-icon color="primary">{{ icons.mdiAccountCircle }}</v-icon>
           </v-avatar>
         </v-badge>
         <div
@@ -55,7 +43,7 @@
       <v-list-item link>
         <v-list-item-icon class="me-2">
           <v-icon size="22">
-            {{ icons.mdiAccountOutline }}
+            {{ icons.mdiAccountCogOutline }}
           </v-icon>
         </v-list-item-icon>
         <v-list-item-content>
@@ -152,7 +140,8 @@
 
 <script>
 import {
-  mdiAccountOutline,
+  mdiAccountCircle,
+  mdiAccountCogOutline,
   mdiEmailOutline,
   mdiCheckboxMarkedOutline,
   mdiChatOutline,
@@ -166,7 +155,8 @@ export default {
   setup() {
     return {
       icons: {
-        mdiAccountOutline,
+        mdiAccountCircle,
+        mdiAccountCogOutline,
         mdiEmailOutline,
         mdiCheckboxMarkedOutline,
         mdiChatOutline,
