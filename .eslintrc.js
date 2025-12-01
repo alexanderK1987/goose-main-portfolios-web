@@ -12,6 +12,7 @@ module.exports = {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-restricted-syntax': 'off',
+    'no-continue': 'off',
 
     // recommended by Vetur
     // 'vue/html-self-closing': 'on',

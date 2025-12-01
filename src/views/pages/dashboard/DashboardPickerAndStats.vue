@@ -62,7 +62,6 @@
               {{ toAgeString(portfolio && portfolio.firstTxTimestamp) }}
             </v-chip>
           </span>
-
         </v-col>
       </v-row>
     </v-card-subtitle>
