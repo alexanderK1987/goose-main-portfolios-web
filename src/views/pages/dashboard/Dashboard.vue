@@ -1,72 +1,34 @@
 <template>
   <v-row>
-    <v-col cols="12" md="8">
+    <v-col cols="12" md="8" class="d-flex flex-column">
       <dashboard-picker-and-stats
         v-model="portfolioIdx"
         :portfolios="portfolios"
         :portfolio-latest-data-point="portfolioLatestDataPoint"
+        class="flex-grow-1 fill-height"
         @pick-portfolio="pickPortfolioByIndex($event)"
       />
     </v-col>
-    <v-col cols="12" md="4">
+    <v-col cols="12" md="4" class="d-flex flex-column">
       <dashboard-goal-to-one-million
         v-model="portfolioLatestDataPoint.vClose"
+        class="flex-grow-1 fill-height"
       />
     </v-col>
-    <v-col cols="12" sm="12" md="8">
+
+    <v-col cols="12" sm="12" md="8" class="d-flex flex-column">
       <dashboard-time-series
         v-model="portfolioTSeriesPeriod"
         :time-series="visibleTSeries"
+        class="flex-grow-1 fill-height"
         @change="switchTSeries($event)"
       />
     </v-col>
-    <v-col cols="12" md="4" sm="6">
-      <dashboard-card-total-earning />
-    </v-col>
-    <v-col cols="12" md="4">
-      <v-row class="match-height">
-        <v-col cols="12" sm="6">
-          <statistics-card-vertical
-            :change="totalProfit.change"
-            :color="totalProfit.color"
-            :icon="totalProfit.icon"
-            :statistics="totalProfit.statistics"
-            :stat-title="totalProfit.statTitle"
-            :subtitle="totalProfit.subtitle"
-          />
-        </v-col>
-        <v-col cols="12" sm="6">
-          <statistics-card-vertical
-            :change="totalSales.change"
-            :color="totalSales.color"
-            :icon="totalSales.icon"
-            :statistics="totalSales.statistics"
-            :stat-title="totalSales.statTitle"
-            :subtitle="totalSales.subtitle"
-          />
-        </v-col>
-        <v-col cols="12" sm="6">
-          <statistics-card-vertical
-            :change="newProject.change"
-            :color="newProject.color"
-            :icon="newProject.icon"
-            :statistics="newProject.statistics"
-            :stat-title="newProject.statTitle"
-            :subtitle="newProject.subtitle"
-          />
-        </v-col>
-
-        <v-col cols="12" sm="6">
-          <statistics-card-vertical
-            :change="salesQueries.change"
-            :color="salesQueries.color"
-            :icon="salesQueries.icon"
-            :statistics="salesQueries.statistics"
-            :stat-title="salesQueries.statTitle"
-            :subtitle="salesQueries.subtitle"
-          />
-        </v-col>
-      </v-row>
+    <v-col cols="12" md="4" sm="6" class="d-flex flex-column">
+      <dashboard-card-compositions
+        :value="compositionData"
+        class="flex-grow-1 fill-height"
+      />
     </v-col>
     <v-col cols="12" md="4">
       <dashboard-card-sales-by-countries />
@@ -82,15 +44,13 @@
 
 <script>
 // eslint-disable-next-line object-curly-newline
-import { mdiPoll, mdiLabelVariantOutline, mdiCurrencyUsd, mdiHelpCircleOutline } from '@mdi/js';
 import { snakeToCamel } from '@/utils/snakeCamelTools';
-import StatisticsCardVertical from '@/components/statistics-card/StatisticsCardVertical.vue';
 import siteConfig from '@/../.siteConfig';
 
 // demos
 import DashboardGoalToOneMillion from './DashboardGoalToOneMillion.vue';
 import DashboardPickerAndStats from './DashboardPickerAndStats.vue';
-import DashboardCardTotalEarning from './DashboardCardTotalEarning.vue';
+import DashboardCardCompositions from './DashboardCardCompositions.vue';
 import DashboardCardDepositAndWithdraw from './DashboardCardDepositAndWithdraw.vue';
 import DashboardCardSalesByCountries from './DashboardCardSalesByCountries.vue';
 import DashboardTimeSeries from './DashboardTimeSeries.vue';
@@ -98,10 +58,9 @@ import DashboardDatatable from './DashboardDatatable.vue';
 
 export default {
   components: {
-    StatisticsCardVertical,
     DashboardGoalToOneMillion,
     DashboardPickerAndStats,
-    DashboardCardTotalEarning,
+    DashboardCardCompositions,
     DashboardCardDepositAndWithdraw,
     DashboardCardSalesByCountries,
     DashboardTimeSeries,
@@ -115,43 +74,23 @@ export default {
     portfolioTSeriesMaps: {},
     visibleTSeries: [],
     portfolioTickerStats: [],
-
-    totalProfit: {
-      statTitle: 'Total Profit',
-      icon: mdiPoll,
-      color: 'success',
-      subtitle: 'Weekly Project',
-      statistics: '$25.6k',
-      change: '+42%',
-    },
-    totalSales: {
-      statTitle: 'Refunds',
-      icon: mdiCurrencyUsd,
-      color: 'secondary',
-      subtitle: 'Past Month',
-      statistics: '$78',
-      change: '-15%',
-    },
-    newProject: {
-      statTitle: 'New Project',
-      icon: mdiLabelVariantOutline,
-      color: 'primary',
-      subtitle: 'Yearly Project',
-      statistics: '862',
-      change: '-18%',
-    },
-    salesQueries: {
-      statTitle: 'Sales Quries',
-      icon: mdiHelpCircleOutline,
-      color: 'warning',
-      subtitle: 'Last week',
-      statistics: '15',
-      change: '-18%',
-    },
   }),
   computed: {
     portfolio() {
       return Array.isArray(this.portfolios) ? this.portfolios[this.portfolioIdx] : {};
+    },
+    compositionData() {
+      if (Array.isArray(this.portfolioLatestDataPoint?.positions)) {
+        const { positions } = this.portfolioLatestDataPoint;
+        const sortedPositions = [...positions].sort((a, b) => b.vClose - a.vClose);
+
+        return [
+          { value: this.portfolioLatestDataPoint.cashClose, ticker: '$CASH' },
+          ...sortedPositions.map(p => ({ value: p.vClose, ticker: p.ticker })),
+        ];
+      }
+
+      return [];
     },
   },
   watch: {

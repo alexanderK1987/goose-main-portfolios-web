@@ -3,6 +3,50 @@ import { toCurrency, toPercentage, toLocaleDateString } from './numberTools';
 export const apexUpColor = '#00A726';
 export const apexDownColor = '#CF403C';
 
+export const dashboardCompositionDoughnutOptions = dataLabels => ({
+  chart: {
+    type: 'donut',
+  },
+  labels: dataLabels,
+  dataLabels: {
+    enabled: true,
+    style: {
+      fontSize: '12px',
+    },
+  },
+  legend: {
+    position: 'right',
+    horizontalAlign: 'center',
+    itemMargin: {
+      horizontal: 2,
+      vertical: 4,
+    },
+  },
+  tooltip: { enabled: false },
+  plotOptions: {
+    pie: {
+      donut: {
+        labels: {
+          show: true,
+          value: {
+            formatter(w) {
+              return toCurrency(parseFloat(w));
+            },
+          },
+          total: {
+            show: true,
+            fontSize: '10px',
+            label: 'Total',
+            formatter(w) {
+              return toCurrency(w.globals.seriesTotals.reduce((a, b) => a + b, 0));
+            },
+          },
+        },
+      },
+    },
+  },
+});
+
 export const dashboardCandlesticksOptions = {
   chart: {
     type: 'candlestick',
@@ -43,7 +87,7 @@ export const dashboardCandlesticksOptions = {
     axisTicks: { show: true },
     labels: {
       offsetY: 3,
-      formatter: x => toCurrency(x, false, 0),
+      formatter: x => toCurrency(x, 0),
     },
   },
 
@@ -65,7 +109,7 @@ export const dashboardCandlesticksOptions = {
 
       return (
         '<div class="apexcharts-tooltip-candlestick pa-3">'
-          + `<div><strong>${toLocaleDateString(x)}</strong></div><hr/>`
+          + `<div><strong>${toLocaleDateString(x)}</strong></div><hr class="my-2"/>`
           + '<table>'
           + '<tr>'
           + '<td class="apexcharts-tooltip-label caption">Open</td>'

@@ -42,19 +42,27 @@
     </v-card-title>
     <v-card-subtitle class="">
       <v-row>
-        <v-col>
-          <span class="caption me-1">
+        <v-col class="d-flex flex-wrap justify-start align-center">
+          <span class="caption me-2">
+            Current market day
+            <v-chip v-if="portfolioLatestDataPoint" dense small class="caption my-n6 py-0">
+              {{ toLocaleDateString(portfolioLatestDataPoint.timestamp) }}
+            </v-chip>
+          </span>
+          <span class="caption me-2">
             First transaction date
+            <v-chip v-if="portfolio" outlineddense small class="caption my-n6 py-0 me-3">
+              {{ toLocaleDateString(portfolio && portfolio.firstTxTimestamp) }}
+            </v-chip>
           </span>
-          <v-chip v-if="portfolio" dense small class="caption my-n6 py-0 me-3">
-            {{ toLocaleDateString(portfolio && portfolio.firstTxTimestamp) }}
-          </v-chip>
-          <span class="caption me-1">
+
+          <span class="caption me-2">
             Account age
+            <v-chip v-if="portfolio" dense small class="caption my-n6 py-0">
+              {{ toAgeString(portfolio && portfolio.firstTxTimestamp) }}
+            </v-chip>
           </span>
-          <v-chip v-if="portfolio" dense small class="caption my-n6 py-0">
-            {{ toAgeString(portfolio && portfolio.firstTxTimestamp) }}
-          </v-chip>
+
         </v-col>
       </v-row>
     </v-card-subtitle>

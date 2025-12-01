@@ -1,4 +1,4 @@
-export function toCurrency(number) {
+export function toCurrency(number, digits) {
   if (Number.isNaN(parseFloat(number))) {
     number = 0;
   }
@@ -6,8 +6,8 @@ export function toCurrency(number) {
   return (number || 0).toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   });
 }
 

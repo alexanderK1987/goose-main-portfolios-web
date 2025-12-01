@@ -1,11 +1,11 @@
 <template>
-  <v-card class="greeting-card">
+  <v-card>
     <v-card-title class="align-start">
       Road to One Million
     </v-card-title>
     <v-row no-gutters>
       <v-col cols="8">
-        <v-card-text class="">
+        <v-card-text>
           My progress
           <v-progress-linear height="8" :value="value / 1e4 " color="primary" class="my-2" />
           <div class="font-weight-bold text-4xl pt-1">
@@ -53,30 +53,14 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-.greeting-card {
-  .greeting-card-bg {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-  }
-  .greeting-card-trophy {
-    position: absolute;
-    bottom: 10%;
-    right: 8%;
-  }
+.greeting-card-bg {
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
-// rtl
-.v-application {
-  &.v-application--is-rtl {
-    .greeting-card-bg {
-      right: initial;
-      left: 0;
-      transform: rotateY(180deg);
-    }
-    .greeting-card-trophy {
-      left: 8%;
-      right: initial;
-    }
-  }
+.greeting-card-trophy {
+  position: absolute;
+  bottom: 1.5em;
+  right: 1.2em;
 }
 </style>
