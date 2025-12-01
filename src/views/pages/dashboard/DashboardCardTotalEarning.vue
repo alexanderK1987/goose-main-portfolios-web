@@ -1,21 +1,10 @@
 <template>
   <v-card>
     <v-card-title class="align-start">
-      <span>Total Earning</span>
-      <v-spacer />
-
-      <v-btn
-        icon
-        small
-        class="me-n3 mt-n2"
-      >
-        <v-icon>
-          {{ icons.mdiDotsVertical }}
-        </v-icon>
-      </v-btn>
+      <span>Compositions</span>
     </v-card-title>
 
-    <v-card-text class="my-7">
+    <v-card-text class="">
       <div class="d-flex align-center">
         <h1 class="text-4xl font-weight-semibold">
           $24,895

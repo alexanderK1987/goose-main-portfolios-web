@@ -111,7 +111,7 @@ export default {
     portfolioIdx: 0,
     portfolios: [],
     portfolioLatestDataPoint: {},
-    portfolioTSeriesPeriod: '6m',
+    portfolioTSeriesPeriod: '1m',
     portfolioTSeriesMaps: {},
     visibleTSeries: [],
     portfolioTickerStats: [],
