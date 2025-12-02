@@ -4,19 +4,19 @@
       <dashboard-picker-and-stats
         v-model="portfolioIdx"
         :portfolios="portfolios"
-        :portfolio-latest-data-point="portfolioLatestDataPoint"
+        :portfolio-latest-data-point="portfolioLastMarketDayData"
         class="flex-grow-1 fill-height"
         @pick-portfolio="pickPortfolioByIndex($event)"
       />
     </v-col>
     <v-col cols="12" md="4" class="d-flex flex-column">
       <dashboard-goal-to-one-million
-        v-model="portfolioLatestDataPoint.vClose"
+        v-model="portfolioLastMarketDayData.vClose"
         class="flex-grow-1 fill-height"
       />
     </v-col>
 
-    <v-col cols="12" sm="12" md="8" class="d-flex flex-column">
+    <v-col cols="12" md="8" class="d-flex flex-column">
       <dashboard-time-series
         v-model="portfolioTSeriesPeriod"
         :time-series="visibleTSeries"
@@ -24,11 +24,55 @@
         @change="switchTSeries($event)"
       />
     </v-col>
-    <v-col cols="12" md="4" sm="6" class="d-flex flex-column">
+    <v-col cols="12" md="4" class="d-flex flex-column">
       <dashboard-card-compositions
         :value="compositionData"
         class="flex-grow-1 fill-height"
       />
+    </v-col>
+    <v-col cols="12">
+      <v-card>
+        <v-card-title>
+          Holdings
+          <v-spacer />
+          <v-btn icon small class="my-n1" @click="showHoldings = !showHoldings">
+            <v-icon>
+              {{ showHoldings? icons.mdiChevronUp :icons.mdiChevronDown }}
+            </v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text>
+          <dashboard-ticker-stats v-if="showHoldings" :value="holdingPositionStats" />
+          <v-divider v-else />
+          <v-textarea
+            readonly
+            :class="['caption']"
+            :value="JSON.stringify(holdingPositionStats, null, 2)"
+          />
+        </v-card-text>
+        <v-card-title>
+          Closed Positions
+          <v-spacer />
+          <v-btn icon small class="my-n1" @click="showClosedPositions = !showClosedPositions">
+            <v-icon>
+              {{ showClosedPositions? icons.mdiChevronUp :icons.mdiChevronDown }}
+            </v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text>
+          <dashboard-ticker-stats
+            v-if="showClosedPositions"
+            is-closed-stats
+            :value="closedPositionStats"
+          />
+          <v-divider v-else />
+          <v-textarea
+            readonly
+            :class="['caption']"
+            :value="JSON.stringify(closedPositionStats, null, 2)"
+          />
+        </v-card-text>
+      </v-card>
     </v-col>
     <v-col cols="12" md="4">
       <dashboard-card-sales-by-countries />
@@ -36,14 +80,12 @@
     <v-col cols="12" md="8">
       <dashboard-card-deposit-and-withdraw />
     </v-col>
-    <v-col cols="12">
-      <dashboard-datatable />
-    </v-col>
   </v-row>
 </template>
 
 <script>
 // eslint-disable-next-line object-curly-newline
+import { mdiChevronDown, mdiChevronUp } from '@mdi/js';
 import { snakeToCamel } from '@/utils/snakeCamelTools';
 import siteConfig from '@/../.siteConfig';
 
@@ -54,7 +96,7 @@ import DashboardCardCompositions from './DashboardCardCompositions.vue';
 import DashboardCardDepositAndWithdraw from './DashboardCardDepositAndWithdraw.vue';
 import DashboardCardSalesByCountries from './DashboardCardSalesByCountries.vue';
 import DashboardTimeSeries from './DashboardTimeSeries.vue';
-import DashboardDatatable from './DashboardDatatable.vue';
+import DashboardTickerStats from './DashboardTickerStats.vue';
 
 export default {
   components: {
@@ -64,30 +106,70 @@ export default {
     DashboardCardDepositAndWithdraw,
     DashboardCardSalesByCountries,
     DashboardTimeSeries,
-    DashboardDatatable,
+    DashboardTickerStats,
   },
   data: () => ({
     portfolioIdx: 0,
     portfolios: [],
-    portfolioLatestDataPoint: {},
+    portfolioLastMarketDayData: {},
     portfolioTSeriesPeriod: '1m',
     portfolioTSeriesMaps: {},
     visibleTSeries: [],
     portfolioTickerStats: [],
+    showHoldings: true,
+    showClosedPositions: true,
+    icons: {
+      mdiChevronDown,
+      mdiChevronUp,
+    },
   }),
   computed: {
     portfolio() {
       return Array.isArray(this.portfolios) ? this.portfolios[this.portfolioIdx] : {};
     },
     compositionData() {
-      if (Array.isArray(this.portfolioLatestDataPoint?.positions)) {
-        const { positions } = this.portfolioLatestDataPoint;
+      if (Array.isArray(this.portfolioLastMarketDayData?.positions)) {
+        const { positions } = this.portfolioLastMarketDayData;
         const sortedPositions = [...positions].sort((a, b) => b.vClose - a.vClose);
 
         return [
-          { value: this.portfolioLatestDataPoint.cashClose, ticker: '$CASH' },
+          { value: this.portfolioLastMarketDayData.cashClose, ticker: '$CASH' },
           ...sortedPositions.map(p => ({ value: p.vClose, ticker: p.ticker })),
         ];
+      }
+
+      return [];
+    },
+    holdingPositionStats() {
+      if (this.portfolioLastMarketDayData && Array.isArray(this.portfolioTickerStats?.positions)) {
+        const holdingPositions = this.portfolioLastMarketDayData.positions || [];
+        const holdingMap = {};
+        for (const position of holdingPositions) {
+          holdingMap[position.ticker] = position;
+        }
+        const holdingTickers = new Set(holdingPositions.map(p => p.ticker));
+        const holdintStats = [];
+        for (const stat of this.portfolioTickerStats.positions) {
+          if (holdingTickers.has(stat.ticker)) {
+            const clonedStat = { ...stat };
+            holdintStats.push(Object.assign(clonedStat, holdingMap[stat.ticker] || {}));
+          }
+        }
+        holdintStats.sort((a, b) => b.sumCost - a.sumCost);
+
+        return holdintStats;
+      }
+
+      return [];
+    },
+    closedPositionStats() {
+      if (Array.isArray(this.portfolioTickerStats?.positions)) {
+        const closedStats = this.portfolioTickerStats.positions.filter(
+          stat => stat.qtyHold < 1e-5,
+        );
+        closedStats.sort((a, b) => b.sumRevenue - a.sumRevenue);
+
+        return closedStats;
       }
 
       return [];
@@ -96,7 +178,7 @@ export default {
   watch: {
     portfolioIdx() {
       this.updateUrlFragment();
-      this.getMyPortfolioLastDataPoint();
+      this.getPortfolioLastMarketDayData();
       this.portfolioTSeriesMaps = {};
       this.getMyPortfolioTSeries();
       this.getMyPortfolioTickerStats();
@@ -105,7 +187,7 @@ export default {
   async created() {
     this.loading = true;
     await this.getMyPortfolios();
-    this.getMyPortfolioLastDataPoint();
+    this.getPortfolioLastMarketDayData();
     this.getMyPortfolioTSeries();
     this.getMyPortfolioTickerStats();
     this.loading = false;
@@ -136,14 +218,14 @@ export default {
         console.error(err);
       }
     },
-    async getMyPortfolioLastDataPoint() {
+    async getPortfolioLastMarketDayData() {
       if (!this.portfolio) {
         return;
       }
       try {
         const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.portfolioLastMarketDayData(this.portfolio._id)}`;
         const response = await this.$api.get(REQ_URL);
-        this.portfolioLatestDataPoint = snakeToCamel(response.data) || {};
+        this.portfolioLastMarketDayData = snakeToCamel(response.data) || {};
       } catch (err) {
         console.error(err);
       }

@@ -1,29 +1,24 @@
 <template>
-  <v-card>
+  <v-card ref="chartContainer">
     <v-card-title class="d-flex justify-space-between align-start">
       <span>Compositions</span>
       <v-spacer />
-      <v-btn
-        v-model="groupSmallPositions"
-        class="my-0 py-0 mr-n2"
-        dense
-        flat
-        outlined
-        rounded
-        hide-details
-        x-small
-        color="secondary"
-        @click="groupMinors = !groupMinors"
-      >
-        {{ groupMinors ? 'ungroup' : 'group minors' }}
-      </v-btn>
+      <v-chip-group class="pa-0 my-n2" @change="groupMinors = !groupMinors">
+        <v-chip v-if="!groupMinors" outlined small>
+          group minors
+        </v-chip>
+        <v-chip v-else outlined small>
+          ungroup
+        </v-chip>
+      </v-chip-group>
     </v-card-title>
-    <v-card-text>
+    <v-card-text class="py-0 my-0">
       <vue-apex-charts
         v-if="Array.isArray(chartData) && chartOptions"
         :options="chartOptions"
         :series="chartData"
-        height="350"
+        :height="chartHeight"
+        @updated="handleChartRedraw"
       />
     </v-card-text>
   </v-card>
@@ -51,6 +46,8 @@ export default {
     groupThreshold: 2.5e-2,
     groupMinors: true,
     icons: { mdiDotsVertical, mdiMenuUp },
+    chartLabelLocations: 'right',
+    chartHeight: 300,
   }),
   computed: {
     totalValue() {
@@ -103,7 +100,22 @@ export default {
       return this.value.map(p => p.ticker);
     },
     chartOptions() {
-      return dashboardCompositionDoughnutOptions(this.tickerLabels);
+      return dashboardCompositionDoughnutOptions(this.tickerLabels, this.chartLabelLocations);
+    },
+  },
+  methods: {
+    handleChartRedraw() {
+      this.$nextTick(() => {
+        const container = this.$refs.chartContainer.$el;
+        if (container) {
+          // Update the data properties that the computed property depends on
+          if (container.offsetHeight > container.offsetWidth * 0.9) {
+            this.chartLabelLocations = 'bottom';
+          } else {
+            this.chartLabelLocations = 'right';
+          }
+        }
+      });
     },
   },
 };

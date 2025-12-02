@@ -3,7 +3,7 @@ import { toCurrency, toPercentage, toLocaleDateString } from './numberTools';
 export const apexUpColor = '#00A726';
 export const apexDownColor = '#CF403C';
 
-export const dashboardCompositionDoughnutOptions = dataLabels => ({
+export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocations) => ({
   chart: {
     type: 'donut',
   },
@@ -15,7 +15,7 @@ export const dashboardCompositionDoughnutOptions = dataLabels => ({
     },
   },
   legend: {
-    position: 'right',
+    position: chartLabelLocations || 'right',
     horizontalAlign: 'center',
     itemMargin: {
       horizontal: 2,

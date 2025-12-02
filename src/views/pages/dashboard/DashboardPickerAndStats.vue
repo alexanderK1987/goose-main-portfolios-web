@@ -7,7 +7,7 @@
       <v-spacer />
       <v-menu v-model="pickerVisible" offset-y left min-width="280">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn icon small class="me-n3 mt-n2" v-bind="attrs" v-on="on">
+          <v-btn icon small class="my-n1" v-bind="attrs" v-on="on">
             <v-icon>
               {{ pickerVisible? icons.mdiChevronUp :icons.mdiChevronDown }}
             </v-icon>
@@ -43,22 +43,21 @@
     <v-card-subtitle class="">
       <v-row>
         <v-col class="d-flex flex-wrap justify-start align-center">
-          <span class="caption me-2">
-            Current market day
-            <v-chip v-if="portfolioLatestDataPoint" dense small class="caption my-n6 py-0">
+          <span class="caption me-4 pb-2">
+            Market day
+            <v-chip v-if="portfolioLatestDataPoint" dense small class="my-n3 py-0">
               {{ toLocaleDateString(portfolioLatestDataPoint.timestamp) }}
             </v-chip>
           </span>
-          <span class="caption me-2">
-            First transaction date
-            <v-chip v-if="portfolio" outlineddense small class="caption my-n6 py-0 me-3">
+          <span class="caption me-4 pb-2">
+            First activity
+            <v-chip v-if="portfolio" outlineddense small class="my-n3 py-0">
               {{ toLocaleDateString(portfolio && portfolio.firstTxTimestamp) }}
             </v-chip>
           </span>
-
-          <span class="caption me-2">
+          <span class="caption pb-2">
             Account age
-            <v-chip v-if="portfolio" dense small class="caption my-n6 py-0">
+            <v-chip v-if="portfolio" dense small class="my-n3 py-0">
               {{ toAgeString(portfolio && portfolio.firstTxTimestamp) }}
             </v-chip>
           </span>

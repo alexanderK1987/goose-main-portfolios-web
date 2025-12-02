@@ -3,7 +3,7 @@
     <v-card-title class="d-flex align-start justify-space-between">
       <v-row>
         <v-col cols="12" md="4">
-          <span>Portfolio Net Values</span>
+          <span class="text-no-wrap">Portfolio Net Values</span>
         </v-col>
         <v-col cols="12" md="8" class="d-flex align-end">
           <v-spacer />
@@ -13,7 +13,7 @@
               :key="period"
               outlined
               small
-              class="mx-1"
+              class="ms-1 me-0"
             >
               {{ period }}
             </v-chip>
@@ -22,7 +22,7 @@
       </v-row>
     </v-card-title>
 
-    <v-card-text class="pt-0 mt-0">
+    <v-card-text class="py-0 my-0">
       <!-- Chart -->
       <vue-apex-charts
         v-if="Array.isArray(chartData) && candlesticksChartOptions"
@@ -77,7 +77,7 @@ export default {
       },
     },
     timeSeriesPeriods() {
-      return ['7d', '1m', '3m', '6m', '1y', '5y', '10y', 'ytd', 'all'];
+      return ['1m', '3m', '6m', '1y', '5y', 'ytd', 'all'];
     },
     chartData() {
       const data = Array.isArray(this.timeSeries)
