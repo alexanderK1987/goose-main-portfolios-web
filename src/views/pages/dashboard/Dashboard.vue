@@ -44,11 +44,6 @@
         <v-card-text>
           <dashboard-ticker-stats v-if="showHoldings" :value="holdingPositionStats" />
           <v-divider v-else />
-          <v-textarea
-            readonly
-            :class="['caption']"
-            :value="JSON.stringify(holdingPositionStats, null, 2)"
-          />
         </v-card-text>
         <v-card-title>
           Closed Positions
@@ -66,11 +61,6 @@
             :value="closedPositionStats"
           />
           <v-divider v-else />
-          <v-textarea
-            readonly
-            :class="['caption']"
-            :value="JSON.stringify(closedPositionStats, null, 2)"
-          />
         </v-card-text>
       </v-card>
     </v-col>
