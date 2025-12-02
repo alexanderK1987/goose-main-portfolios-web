@@ -29,6 +29,14 @@ export function toPercentage(number, withSign = true, fractionDigits = 2) {
   });
 }
 
+export function toUDPercentage(number, fractionDigits = 2) {
+  const pctString = toPercentage(number, true, fractionDigits);
+  const upSign = '▲ ';
+  const downSign = '▼ ';
+
+  return pctString.replace('+', upSign).replace('-', downSign);
+}
+
 export function toLocaleDateString(dateInput) {
   const date = new Date(dateInput);
 
@@ -59,4 +67,11 @@ export function toAgeString(dateInput) {
   }
 
   return `${years}y ${months}m ${days}d`;
+}
+
+export function getTrendColor(diffPercentages) {
+  return diffPercentages > 0.1e-2
+    ? 'success'
+    : diffPercentages < -0.1e-2
+      ? 'error' : 'secondary';
 }

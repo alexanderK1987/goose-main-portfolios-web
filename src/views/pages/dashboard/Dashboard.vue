@@ -64,12 +64,6 @@
         </v-card-text>
       </v-card>
     </v-col>
-    <v-col cols="12" md="4">
-      <dashboard-card-sales-by-countries />
-    </v-col>
-    <v-col cols="12" md="8">
-      <dashboard-card-deposit-and-withdraw />
-    </v-col>
   </v-row>
 </template>
 
@@ -83,8 +77,6 @@ import siteConfig from '@/../.siteConfig';
 import DashboardGoalToOneMillion from './DashboardGoalToOneMillion.vue';
 import DashboardPickerAndStats from './DashboardPickerAndStats.vue';
 import DashboardCardCompositions from './DashboardCardCompositions.vue';
-import DashboardCardDepositAndWithdraw from './DashboardCardDepositAndWithdraw.vue';
-import DashboardCardSalesByCountries from './DashboardCardSalesByCountries.vue';
 import DashboardTimeSeries from './DashboardTimeSeries.vue';
 import DashboardTickerStats from './DashboardTickerStats.vue';
 
@@ -93,8 +85,6 @@ export default {
     DashboardGoalToOneMillion,
     DashboardPickerAndStats,
     DashboardCardCompositions,
-    DashboardCardDepositAndWithdraw,
-    DashboardCardSalesByCountries,
     DashboardTimeSeries,
     DashboardTickerStats,
   },

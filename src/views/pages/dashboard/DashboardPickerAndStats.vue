@@ -113,7 +113,7 @@ import {
   mdiTrophy,
 } from '@mdi/js';
 import {
-  toCurrency, toPercentage, toLocaleDateString, toAgeString,
+  toCurrency, toPercentage, toLocaleDateString, toAgeString, getTrendColor,
 } from '@/utils/numberTools';
 
 export default {
@@ -139,6 +139,7 @@ export default {
     toLocaleDateString,
     toPercentage,
     toAgeString,
+    getTrendColor,
     pickerVisible: false,
     portfolioItemIdxSelected: 0,
     icons: {
@@ -209,12 +210,6 @@ export default {
     },
   },
   methods: {
-    getTrendColor(diffPercentages) {
-      return diffPercentages > 0.1e-2
-        ? 'success'
-        : diffPercentages < -0.1e-2
-          ? 'error' : 'secondary';
-    },
     getTrendDiffIcon(diffPercentages) {
       return diffPercentages > 0.1e-2
         ? this.icons.mdiTrendingUp
