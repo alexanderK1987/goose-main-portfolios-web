@@ -2,6 +2,31 @@ import { toCurrency, toPercentage, toLocaleDateString } from './numberTools';
 
 export const apexUpColor = '#00A726';
 export const apexDownColor = '#CF403C';
+export const apexFlatColor = '#888';
+
+export const sparklineOptions = (trend, width = 40, height = 25) => ({
+  chart: {
+    type: 'line',
+    height,
+    width,
+    sparkline: {
+      enabled: true, // Recommended for sparklines, simplifies configuration
+    },
+  },
+  xaxis: {
+    type: 'datetime',
+  },
+  stroke: {
+    width: 1.5,
+    curve: 'smooth',
+    colors: [trend > 0 ? apexUpColor : trend < 0 ? apexDownColor : apexFlatColor],
+  },
+
+  // Ensure all axis and data labels are off
+  dataLabels: { enabled: false },
+  tooltip: { enabled: false },
+
+});
 
 export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocations) => ({
   chart: {

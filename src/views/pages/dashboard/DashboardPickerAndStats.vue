@@ -82,9 +82,9 @@
               {{ data.title }}
             </p>
             <div class="d-flex flex-nowrap align-center">
-              <span :class="`${data.contentColor}--text text-lg font-weight-bold`">
+              <samp :class="`${data.contentColor}--text text-lg font-weight-bold`">
                 {{ data.content }}
-              </span>
+              </samp>
               <sub
                 v-if="data.caption"
                 :class="`${data.captionColor}--text text-xxs ps-1`"

@@ -6,29 +6,163 @@
       :custom-sort="customSort"
       item-key="ticker"
       class="table-rounded"
+      dense
     >
       <template
         v-for="header in headers"
         #[`item.${header.value}`]="{ item }"
       >
         <div :key="header.value">
-          <v-chip v-if="header.value === 'ticker'" outlined>
-            <div class="font-weight-semibold">
+          <v-chip v-if="header.value === 'ticker'" small outlined>
+            <div>
               {{ item.ticker }}
             </div>
           </v-chip>
+          <vue-apex-charts
+            v-if="header.value === 'dayTrend'"
+            :key="item.__chartKey__"
+            :options="sparklineOptions(item.vClose - item.sumHoldingCost, 50, 20)"
+            :series="item.tSeries"
+            :width="$vuetify.breakpoint.mdAndUp ? 120 : 100"
+            height="32"
+            class="pr-0 mr-n2"
+            @updated="handleChartRedraw(item)"
+          />
           <div v-else-if="header.value === 'PNL'">
-            <samp>{{ toCurrency(getPNL(item)) }}</samp>
+            <v-menu offset-overflow>
+              <template v-slot:activator="{ on, attrs }">
+                <a v-bind="attrs" class="pa-0 mx-0 secondary--text" v-on="on">
+                  <samp>{{ toCurrency(getPNL(item)) }}</samp>
+                </a>
+              </template>
+              <v-card max-width="18em">
+                <v-card-text class="info white--text py-2 px-4">
+                  <span class="font-weight-bold">{{ item.ticker }}</span> - Profit &amp; Loss
+                </v-card-text>
+                <v-card-text class="caption pa-2">
+                  <v-row no-gutters>
+                    <v-col cols="1" />
+                    <v-col cols="6">
+                      Realized gain
+                    </v-col>
+                    <v-col cols="5" class="text-right">
+                      <samp>{{ toCurrency(item.sumRealizedGain) }}</samp>
+                    </v-col>
+
+                    <v-col v-if="item.qtyHold" cols="1" />
+                    <v-col v-if="item.qtyHold > 1e-5" cols="6">
+                      Unrealized gain
+                    </v-col>
+                    <v-col v-if="item.qtyHold > 1e-5" cols="5" class="text-right">
+                      <samp>{{ toCurrency(item.vClose - item.sumHoldingCost) }}</samp>
+                    </v-col>
+
+                    <v-col cols="1" class="font-weight-bold text-center">
+                      +
+                    </v-col>
+                    <v-col cols="6">
+                      Dividends
+                    </v-col>
+                    <v-col cols="5" class="text-right">
+                      <samp>{{ toCurrency(item.sumDividend) }}</samp>
+                    </v-col>
+                    <v-col cols="12">
+                      <hr>
+                    </v-col>
+
+                    <v-col cols="1" class="font-weight-bold text-center">
+                      =
+                    </v-col>
+                    <v-col cols="6" class="font-weight-semibold">
+                      Profits
+                    </v-col>
+                    <v-col cols="5" class="text-right font-weight-bold success--text">
+                      <samp>{{ toCurrency(getPNL(item) + getTxCost(item)) }}</samp>
+                    </v-col>
+
+                    <v-col cols="1" class="font-weight-bold text-center">
+                      -
+                    </v-col>
+                    <v-col cols="5" class="font-weight-semibold">
+                      Tx. costs
+                    </v-col>
+                    <v-col cols="6" class="text-right font-weight-bold error--text">
+                      <samp>{{ toCurrency(getTxCost(item)) }}</samp>
+                    </v-col>
+                    <v-col cols="12">
+                      <hr>
+                    </v-col>
+                    <v-col cols="1" class="font-weight-bold text-center">
+                      =
+                    </v-col>
+                    <v-col cols="6" class="font-weight-semibold">
+                      Total P/L
+                    </v-col>
+                    <v-col cols="5" class="text-right font-weight-bold info--text">
+                      <samp>{{ toCurrency(getPNL(item)) }}</samp>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
+            </v-menu>
           </div>
           <div v-else-if="header.value === 'PNL%'">
-            <samp :class="`${getTrendColor(getGainPercentages(item))}--text`">
+            <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap`">
               {{ toUDPercentage(getGainPercentages(item)) }}
             </samp>
           </div>
-          <div v-else-if="header.value === 'tax'">
-            <samp class="text-right">
-              {{ toCurrency(item.sumTaxDividend) }} / {{ toCurrency(item.sumTaxCgain) }} / {{ toCurrency(item.sumTxFee) }}
-            </samp>
+          <div v-else-if="header.value === 'txCost'">
+            <v-menu offset-overflow>
+              <template v-slot:activator="{ on, attrs }">
+                <a v-bind="attrs" class="pa-0 mx-0 secondary--text" v-on="on">
+                  <samp>{{ toCurrency(getTxCost(item)) }}</samp>
+                </a>
+              </template>
+              <v-card max-width="15em">
+                <v-card-text class="white--text error py-2 px-4">
+                  <span class="font-weight-bold">{{ item.ticker }}</span> - transaction cost
+                </v-card-text>
+                <v-card-text class="caption pa-2">
+                  <v-row no-gutters>
+                    <v-col cols="1" />
+                    <v-col cols="6">
+                      Capital gain tax
+                    </v-col>
+                    <v-col cols="5" class="text-right">
+                      <samp>{{ toCurrency(item.sumTaxCgain) }}</samp>
+                    </v-col>
+                    <v-col cols="1" />
+                    <v-col cols="6">
+                      Dividend tax
+                    </v-col>
+                    <v-col cols="5" class="text-right">
+                      <samp>{{ toCurrency(item.sumTaxDividend) }}</samp>
+                    </v-col>
+                    <v-col cols="1" class="font-weight-bold text-center">
+                      +
+                    </v-col>
+                    <v-col cols="6">
+                      Tx. fee
+                    </v-col>
+                    <v-col cols="5" class="text-right">
+                      <samp>{{ toCurrency(item.sumTxFee) }}</samp>
+                    </v-col>
+                    <v-col cols="12">
+                      <hr>
+                    </v-col>
+                    <v-col cols="1" class="font-weight-bold text-center">
+                      =
+                    </v-col>
+                    <v-col cols="6" class="font-weight-semibold">
+                      Total tx. cost
+                    </v-col>
+                    <v-col cols="5" class="text-right font-weight-bold error--text">
+                      <samp>{{ toCurrency(getTxCost(item)) }}</samp>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
+            </v-menu>
           </div>
           <div v-else-if="header.value === 'closedAvgRevenue'">
             <samp class="text-right">
@@ -53,12 +187,20 @@
 </template>
 
 <script>
-import { mdiSquareEditOutline, mdiDotsVertical } from '@mdi/js';
+import { mdiInformationOutline } from '@mdi/js';
+import VueApexCharts from 'vue-apexcharts';
 import {
   toCurrency, toPercentage, getTrendColor, toUDPercentage,
 } from '@/utils/numberTools';
 
+import {
+  sparklineOptions,
+} from '@/utils/apexChartConfigs';
+
 export default {
+  components: {
+    VueApexCharts,
+  },
   props: {
     value: {
       type: Array,
@@ -70,13 +212,13 @@ export default {
     },
   },
   data: () => ({
+    sparklineOptions,
     toCurrency,
     toPercentage,
     toUDPercentage,
     getTrendColor,
     icons: {
-      mdiSquareEditOutline,
-      mdiDotsVertical,
+      mdiInformationOutline,
     },
   }),
   computed: {
@@ -84,7 +226,10 @@ export default {
       if (!this.isClosedStats) {
         return [
           {
-            text: 'Ticker', value: 'ticker', type: 'T', align: 'center',
+            text: 'Ticker', value: 'ticker', align: 'center',
+          },
+          {
+            text: 'Day Trend', value: 'dayTrend',
           },
           {
             text: 'Total P/L%', value: 'PNL%', type: '%', align: 'end',
@@ -105,10 +250,10 @@ export default {
             text: 'Holding Value', value: 'vClose', type: '$', align: 'end',
           },
           {
-            text: 'Pre-tax Dividends', value: 'sumDividend', type: '$', align: 'end',
+            text: 'Dividends', value: 'sumDividend', type: '$', align: 'end',
           },
           {
-            text: 'Dvd. / Cap. Gain Taxes & Fees', value: 'tax', type: '$', align: 'end',
+            text: 'Tx. Costs', value: 'txCost', type: '$', align: 'end',
           }, // sumTaxDividend and sumTaxCgain
         ];
       }
@@ -133,21 +278,24 @@ export default {
           text: 'Volumn', value: 'qtyAdded', type: '#', align: 'end',
         },
         {
-          text: 'Pre-tax Dividends', value: 'sumDividend', type: '$', align: 'end',
+          text: 'Dividends', value: 'sumDividend', type: '$', align: 'end',
         },
         {
-          text: 'Dvd. / Cap. Gain Taxes & Fees', value: 'tax', type: '$', align: 'end',
+          text: 'Tx. Costs', value: 'txCost', type: '$', align: 'end',
         }, // sumTaxDividend and sumTaxCgain
       ];
     },
   },
   methods: {
+    getTxCost(item) {
+      return item.sumTaxDividend + item.sumTaxCgain + item.sumTxFee;
+    },
     getPNL(item) {
-      if (item.vClose > 1e-5) {
-        return (item.vClose - item.sumTaxCgain - item.sumTaxDividend) - (item.sumHoldingCost + item.sumTxFee);
+      if (item.qtyHold > 1e-5) {
+        return item.sumRealizedGain + item.sumDividend + (item.vClose - item.sumHoldingCost) - this.getTxCost(item);
       }
 
-      return (item.sumRevenue - item.sumTaxCgain - item.sumTaxDividend) - (item.sumCost + item.sumTxFee);
+      return item.sumRealizedGain + item.sumDividend - item.sumTaxDividend - item.sumTaxCgain - this.getTxCost(item);
     },
     getGainPercentages(item) {
       if (item.vClose > 1e-5) {
@@ -168,9 +316,23 @@ export default {
           return isDescending ? -diff : diff;
         });
       }
+      if (column === 'dayTrend') {
+        return items.sort((a, b) => {
+          const diff = this.getGainPercentages(a) - this.getGainPercentages(b);
+
+          return isDescending ? -diff : diff;
+        });
+      }
       if (column === 'PNL') {
         return items.sort((a, b) => {
           const diff = this.getPNL(a) - this.getPNL(b);
+
+          return isDescending ? -diff : diff;
+        });
+      }
+      if (column === 'txCost') {
+        return items.sort((a, b) => {
+          const diff = this.getTxCost(a) - this.getTxCost(b);
 
           return isDescending ? -diff : diff;
         });
@@ -180,6 +342,10 @@ export default {
         const diff = a[column] - b[column];
 
         return isDescending ? -diff : diff;
+      });
+    },
+    handleChartRedraw(item) {
+      this.$nextTick(() => {
       });
     },
   },

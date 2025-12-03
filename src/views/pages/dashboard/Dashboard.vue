@@ -128,16 +128,16 @@ export default {
           holdingMap[position.ticker] = position;
         }
         const holdingTickers = new Set(holdingPositions.map(p => p.ticker));
-        const holdintStats = [];
+        const holdingStats = [];
         for (const stat of this.portfolioTickerStats.positions) {
           if (holdingTickers.has(stat.ticker)) {
             const clonedStat = { ...stat };
-            holdintStats.push(Object.assign(clonedStat, holdingMap[stat.ticker] || {}));
+            holdingStats.push(Object.assign(clonedStat, holdingMap[stat.ticker] || {}));
           }
         }
-        holdintStats.sort((a, b) => b.sumCost - a.sumCost);
+        holdingStats.sort((a, b) => b.sumCost - a.sumCost);
 
-        return holdintStats;
+        return holdingStats;
       }
 
       return [];
@@ -239,10 +239,40 @@ export default {
       try {
         const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.portfolioTickerStats(this.portfolio._id)}`;
         const response = await this.$api.get(REQ_URL);
-        this.portfolioTickerStats = snakeToCamel(response.data) || {};
+        const portfolioTickerStats = snakeToCamel(response.data) || {};
+        for (const stat of portfolioTickerStats.positions) {
+          if (stat.qtyHold > 1e-5) {
+            // eslint-disable-next-line no-await-in-loop
+            const tSeries = await this.getTickerDailyTimeSeries(stat.ticker);
+            console.log(JSON.stringify(tSeries, null, 2));
+            stat.tSeries = [{
+              name: 'day trend',
+              data: tSeries,
+            }];
+          }
+        }
+        this.portfolioTickerStats = portfolioTickerStats;
       } catch (err) {
         console.error(err);
       }
+    },
+    async getTickerDailyTimeSeries(ticker) {
+      if (!ticker) {
+        return [];
+      }
+      try {
+        const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.tickerDailyTSeries(ticker)}`;
+        const response = await this.$api.get(REQ_URL);
+
+        return Array.isArray(response.data) ? snakeToCamel(response.data).map(dataPoint => ({
+          x: new Date(dataPoint.timestamp).getTime(),
+          y: dataPoint.pClose,
+        })) : [];
+      } catch (err) {
+        console.error(err);
+      }
+
+      return [];
     },
   },
 };
