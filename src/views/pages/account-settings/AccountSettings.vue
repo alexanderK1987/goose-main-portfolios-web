@@ -24,18 +24,16 @@
     <v-tabs-items v-model="tab">
       <v-tab-item class="py-2">
         <account-settings-profile
-          v-model="profileForm"
+          :value="profileForm"
           :loading="loading"
-          @update="updateProfile()"
-          @reset="resetProfile()"
+          @save="updateProfile($event)"
         />
       </v-tab-item>
       <v-tab-item class="py-2">
         <account-settings-security
-          v-model="securityForm"
+          ref="securityForm"
           :loading="loading"
-          @update="changePassword()"
-          @reset="clearPasswordForm()"
+          @save="changePassword($event)"
         />
       </v-tab-item>
     </v-tabs-items>
@@ -45,23 +43,9 @@
 <script>
 import { mdiAccountOutline, mdiLockOpenOutline } from '@mdi/js';
 import siteConfig from '@/../.siteConfig';
-
-// demos
 import AccountSettingsProfile from './AccountSettingsProfile.vue';
 import AccountSettingsSecurity from './AccountSettingsSecurity.vue';
 import { snakeToCamel, camelToSnake } from '@/utils/snakeCamelTools';
-
-const makeEmptyProfile = () => ({
-  nickname: '----',
-  email: '----.---@-------.----.---',
-  isAdmin: false,
-  isActive: false,
-});
-const makeEmptyPasswordResetForm = () => ({
-  oldPassword: '',
-  newPassword: '',
-  checkPassword: '',
-});
 
 export default {
   components: {
@@ -76,8 +60,7 @@ export default {
       { title: 'Profile', icon: mdiAccountOutline },
       { title: 'Security', icon: mdiLockOpenOutline },
     ],
-    profileForm: makeEmptyProfile(),
-    securityForm: makeEmptyPasswordResetForm(),
+    profileForm: {},
     snackbarProps: {
       timeout: 1.5e3,
       visible: false,
@@ -94,8 +77,8 @@ export default {
   },
 
   created() {
-    this.detectUrlFragment();
     this.getProfile();
+    this.detectUrlFragment();
   },
 
   methods: {
@@ -104,9 +87,6 @@ export default {
       if (hash) {
         this.tab = this?.tabs?.findIndex(tab => tab.title === hash.substring(1)) || 0;
       }
-    },
-    updateUrlFragment(newTabTitle) {
-      window.location.hash = newTabTitle.toLowerCase();
     },
     async getProfile() {
       this.loading = true;
@@ -122,14 +102,14 @@ export default {
         this.loading = false;
       }
     },
-    async updateProfile() {
+    async updateProfile($event) {
       this.loading = true;
       const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userProfile}`;
 
       try {
         // Call the API endpoint
-        const { email, nickname } = camelToSnake(this.profileForm);
-        const response = await this.$api.patch(REQ_URL, { email, nickname });
+        const profileUpdates = camelToSnake($event);
+        const response = await this.$api.patch(REQ_URL, profileUpdates);
         this.profileForm = snakeToCamel(response.data);
         this.snackbarProps.visible = true;
         this.snackbarProps.color = 'success';
@@ -144,27 +124,23 @@ export default {
         this.loading = false;
       }
     },
-    async resetProfile() {
-      await this.getProfile();
-    },
-    clearPasswordForm() {
-      this.securityForm = makeEmptyPasswordResetForm();
-    },
-    async changePassword() {
+    async changePassword($event) {
       const CHPWD_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userChangePassword}`;
       this.loading = true;
       try {
         // Call the API endpoint
         const requestBody = {
-          newPassword: this.securityForm.newPassword,
-          oldPassword: this.securityForm.oldPassword,
+          newPassword: $event.newPassword,
+          oldPassword: $event.oldPassword,
         };
         await this.$api.patch(CHPWD_URL, camelToSnake(requestBody));
 
         this.snackbarProps.visible = true;
         this.snackbarProps.color = 'success';
         this.snackbarProps.content = 'Success!';
-        this.clearPasswordForm();
+        if (this.$refs?.securityForm?.resetForm) {
+          this.$refs.securityForm.resetForm();
+        }
       } catch (err) {
         console.log(err.response.data);
         this.snackbarProps.visible = true;

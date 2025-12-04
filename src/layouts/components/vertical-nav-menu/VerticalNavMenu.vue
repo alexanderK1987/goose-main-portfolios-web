@@ -9,23 +9,24 @@
     @input="val => $emit('update:is-drawer-open', val)"
   >
     <!-- Navigation Header -->
-    <div class="vertical-nav-header d-flex items-center ps-6 pe-5 pt-5 pb-2">
+    <div class="vertical-nav-header d-flex items-center px-3 pt-3 pb-1">
       <router-link
         to="/"
         class="d-flex align-center text-decoration-none"
       >
         <v-img
-          :src="require('@/assets/images/logos/logo.svg')"
-          max-height="30px"
-          max-width="30px"
+          :src="require('@/assets/images/logos/goose-logo.svg')"
+          max-height="45px"
+          max-width="45px"
           alt="logo"
           contain
           eager
-          class="app-logo me-3"
+          class="app-logo me-2"
+          style="transform: scaleX(-1);"
         />
         <v-slide-x-transition>
           <h2 class="app-title text--primary">
-            MATERIO
+            Goose Tracker
           </h2>
         </v-slide-x-transition>
       </router-link>
@@ -40,14 +41,15 @@
       <nav-menu-link
         title="Dashboard"
         :to="{ name: 'pages-dashboard' }"
-        :icon="icons.mdiHomeOutline"
+        :icon="icons.mdiMonitorDashboard"
       />
       <nav-menu-link
-        title="Account Settings"
-        :to="{ name: 'pages-account-settings' }"
-        :icon="icons.mdiAccountCogOutline"
+        title="Portfolio Settings"
+        :to="{ name: 'pages-portfolio-settings' }"
+        :icon="icons.mdiFileDocumentMultipleOutline"
       />
       <nav-menu-group
+        v-if="false"
         title="Pages"
         :icon="icons.mdiFileOutline"
       >
@@ -67,7 +69,13 @@
           target="_blank"
         />
       </nav-menu-group>
-      <nav-menu-section-title title="USER INTERFACE" />
+      <nav-menu-section-title title="SYSTEM SECURITY" />
+      <nav-menu-link
+        title="Account Settings"
+        :to="{ name: 'pages-account-settings' }"
+        :icon="icons.mdiAccountCogOutline"
+      />
+      <nav-menu-section-title title="TOOLS" />
       <nav-menu-link
         title="Typography"
         :to="{ name: 'typography' }"
@@ -105,14 +113,15 @@
 <script>
 // eslint-disable-next-line object-curly-newline
 import {
-  mdiHomeOutline,
+  mdiMonitorDashboard,
+  mdiAccountCogOutline,
+  mdiFileDocumentMultipleOutline,
   mdiAlphaTBoxOutline,
   mdiEyeOutline,
   mdiCreditCardOutline,
   mdiTable,
   mdiFileOutline,
   mdiFormSelect,
-  mdiAccountCogOutline,
 } from '@mdi/js';
 import NavMenuSectionTitle from './components/NavMenuSectionTitle.vue';
 import NavMenuGroup from './components/NavMenuGroup.vue';
@@ -133,14 +142,15 @@ export default {
   setup() {
     return {
       icons: {
-        mdiHomeOutline,
+        mdiMonitorDashboard,
+        mdiAccountCogOutline,
+        mdiFileDocumentMultipleOutline,
         mdiAlphaTBoxOutline,
         mdiEyeOutline,
         mdiCreditCardOutline,
         mdiTable,
         mdiFileOutline,
         mdiFormSelect,
-        mdiAccountCogOutline,
       },
     };
   },

@@ -1,12 +1,14 @@
 <template>
-  <v-row>
+  <v-row dense>
     <v-col cols="12" md="8" class="d-flex flex-column">
       <dashboard-picker-and-stats
         v-model="portfolioIdx"
         :portfolios="portfolios"
         :portfolio-latest-data-point="portfolioLastMarketDayData"
+        :loading="loading"
         class="flex-grow-1 fill-height"
         @pick-portfolio="pickPortfolioByIndex($event)"
+        @trigger-refresh="triggerRefresh()"
       />
     </v-col>
     <v-col cols="12" md="4" class="d-flex flex-column">
@@ -32,7 +34,7 @@
     </v-col>
     <v-col cols="12">
       <v-card>
-        <v-card-title>
+        <v-card-title class="pb-3">
           Holdings
           <v-spacer />
           <v-btn icon small class="my-n1" @click="showHoldings = !showHoldings">
@@ -45,7 +47,7 @@
           <dashboard-ticker-stats v-if="showHoldings" :value="holdingPositionStats" />
           <v-divider v-else />
         </v-card-text>
-        <v-card-title>
+        <v-card-title class="pb-3">
           Closed Positions
           <v-spacer />
           <v-btn icon small class="my-n1" @click="showClosedPositions = !showClosedPositions">
@@ -89,6 +91,7 @@ export default {
     DashboardTickerStats,
   },
   data: () => ({
+    loading: false,
     portfolioIdx: 0,
     portfolios: [],
     portfolioLastMarketDayData: {},
@@ -113,7 +116,7 @@ export default {
         const sortedPositions = [...positions].sort((a, b) => b.vClose - a.vClose);
 
         return [
-          { value: this.portfolioLastMarketDayData.cashClose, ticker: '$CASH' },
+          { value: this.portfolioLastMarketDayData.cashClose, ticker: '$Cash' },
           ...sortedPositions.map(p => ({ value: p.vClose, ticker: p.ticker })),
         ];
       }
@@ -244,11 +247,20 @@ export default {
           if (stat.qtyHold > 1e-5) {
             // eslint-disable-next-line no-await-in-loop
             const tSeries = await this.getTickerDailyTimeSeries(stat.ticker);
-            console.log(JSON.stringify(tSeries, null, 2));
-            stat.tSeries = [{
-              name: 'day trend',
-              data: tSeries,
-            }];
+            stat.tSeries = [{ name: 'day trend', data: tSeries }];
+
+            // baseline
+            if (Array.isArray(tSeries) && tSeries.length) {
+              const baseLine = [
+                { x: tSeries[0].x, y: tSeries[0].y },
+                { x: tSeries[tSeries.length - 1].x, y: tSeries[0].y },
+              ];
+
+              stat.tSeries.push({
+                name: 'baseline',
+                data: baseLine,
+              });
+            }
           }
         }
         this.portfolioTickerStats = portfolioTickerStats;
@@ -273,6 +285,18 @@ export default {
       }
 
       return [];
+    },
+    async triggerRefresh() {
+      this.loading = true;
+      try {
+        await this.getPortfolioLastMarketDayData();
+        await this.getMyPortfolioTSeries();
+        await this.getMyPortfolioTickerStats();
+      } catch (e) {
+        console.log(e);
+      } finally {
+        this.loading = false;
+      }
     },
   },
 };

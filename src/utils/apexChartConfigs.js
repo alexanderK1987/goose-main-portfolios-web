@@ -4,7 +4,7 @@ export const apexUpColor = '#00A726';
 export const apexDownColor = '#CF403C';
 export const apexFlatColor = '#888';
 
-export const sparklineOptions = (trend, width = 40, height = 25) => ({
+export const sparklineOptions = (trend, width = 120, height = 25) => ({
   chart: {
     type: 'line',
     height,
@@ -17,9 +17,9 @@ export const sparklineOptions = (trend, width = 40, height = 25) => ({
     type: 'datetime',
   },
   stroke: {
-    width: 1.5,
+    width: [1.5, 0.4],
     curve: 'smooth',
-    colors: [trend > 0 ? apexUpColor : trend < 0 ? apexDownColor : apexFlatColor],
+    colors: [trend > 0 ? apexUpColor : trend < 0 ? apexDownColor : apexFlatColor, apexFlatColor],
   },
 
   // Ensure all axis and data labels are off
@@ -31,6 +31,9 @@ export const sparklineOptions = (trend, width = 40, height = 25) => ({
 export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocations) => ({
   chart: {
     type: 'donut',
+  },
+  theme: {
+    palette: 'palette1',
   },
   labels: dataLabels,
   dataLabels: {
@@ -55,15 +58,22 @@ export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocati
           show: true,
           value: {
             formatter(w) {
-              return toCurrency(parseFloat(w));
+              const value = parseFloat(w);
+              const valueDigits = Math.floor(Math.log10(Math.abs(value)));
+              const nDigits = Math.max(0, Math.min(2, 5 - valueDigits)) || 0;
+
+              return toCurrency(value, nDigits || 0);
             },
           },
           total: {
             show: true,
-            fontSize: '10px',
             label: 'Total',
             formatter(w) {
-              return toCurrency(w.globals.seriesTotals.reduce((a, b) => a + b, 0));
+              const value = parseFloat(w.globals.seriesTotals.reduce((a, b) => a + b, 0));
+              const valueDigits = Math.floor(Math.log10(Math.abs(value)));
+              const nDigits = Math.max(0, Math.min(2, 5 - valueDigits)) || 0;
+
+              return toCurrency(value, nDigits);
             },
           },
         },
@@ -116,7 +126,7 @@ export const dashboardCandlesticksOptions = {
     },
   },
 
-  stroke: { width: [1] }, // Candlestick strokes are usually thinner
+  stroke: { width: 1 }, // Candlestick strokes are usually thinner
   grid: {
     strokeDashArray: 5, // Use a finer dash array
     padding: { right: 0 },
@@ -138,19 +148,19 @@ export const dashboardCandlesticksOptions = {
           + '<table>'
           + '<tr>'
           + '<td class="apexcharts-tooltip-label caption">Open</td>'
-          + `<td class="apexcharts-tooltip-value caption text-right">${toCurrency(o, false)}</td>`
+          + `<td class="apexcharts-tooltip-value caption text-right"><pre>${toCurrency(o)}</pre></td>`
           + '</tr>'
           + '<tr>'
           + '<td class="apexcharts-tooltip-label caption pe-4">Close</td>'
-          + `<td class="apexcharts-tooltip-value caption text-right">${toCurrency(c, false)}</td>`
+          + `<td class="apexcharts-tooltip-value caption text-right"><pre>${toCurrency(c)}</pre></td>`
           + '</tr>'
           + '<tr>'
-          + '<td class="apexcharts-tooltip-label caption">&Delta;</td>'
-          + `<td class="apexcharts-tooltip-value caption text-right">${toCurrency(c - o)}</td>`
+          + '<td class="apexcharts-tooltip-label caption">Day &Delta;</td>'
+          + `<td class="apexcharts-tooltip-value caption text-right"><pre>${toCurrency(c - o)}</pre></td>`
           + '</tr>'
           + '<tr>'
-          + '<td class="apexcharts-tooltip-label caption">&Delta;%</td>'
-          + `<td class="apexcharts-tooltip-value caption text-right">${toPercentage((c - o) / o)}</td>`
+          + '<td class="apexcharts-tooltip-label caption">Day &Delta;%</td>'
+          + `<td class="apexcharts-tooltip-value caption text-right"><pre>${toPercentage((c - o) / o)}</pre></td>`
           + '</tr>'
           + '</table>'
           + '</div>'

@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <v-card-title class="d-flex align-start justify-space-between">
+    <v-card-title class="d-flex align-start justify-space-between mb-0 pb-0">
       <v-row>
         <v-col cols="12" md="4">
           <span class="text-no-wrap">Portfolio Net Values</span>

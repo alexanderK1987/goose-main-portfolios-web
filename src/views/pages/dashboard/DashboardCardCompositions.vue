@@ -1,6 +1,6 @@
 <template>
   <v-card ref="chartContainer">
-    <v-card-title class="d-flex justify-space-between align-start">
+    <v-card-title class="d-flex justify-space-between align-start pb-0">
       <span>Compositions</span>
       <v-spacer />
       <v-chip-group class="pa-0 my-n2" @change="groupMinors = !groupMinors">
@@ -106,7 +106,7 @@ export default {
   methods: {
     handleChartRedraw() {
       this.$nextTick(() => {
-        const container = this.$refs.chartContainer.$el;
+        const container = this.$refs?.chartContainer?.$el;
         if (container) {
           // Update the data properties that the computed property depends on
           if (container.offsetHeight > container.offsetWidth * 0.9) {

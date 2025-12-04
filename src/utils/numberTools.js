@@ -40,12 +40,12 @@ export function toUDPercentage(number, fractionDigits = 2) {
 export function toLocaleDateString(dateInput) {
   const date = new Date(dateInput);
 
-  return (Number.isNaN(date)) ? '----' : date.toLocaleDateString();
+  return (Number.isNaN(date.getDate())) ? 'no-data' : date.toLocaleDateString();
 }
 
 export function toAgeString(dateInput) {
   const date = new Date(dateInput);
-  if (Number.isNaN(date)) return '--';
+  if (Number.isNaN(date.getDate())) return 'no-data';
 
   const now = new Date();
 
@@ -70,8 +70,8 @@ export function toAgeString(dateInput) {
 }
 
 export function getTrendColor(diffPercentages) {
-  return diffPercentages > 0.1e-2
+  return diffPercentages > 0
     ? 'success'
-    : diffPercentages < -0.1e-2
+    : diffPercentages < 0
       ? 'error' : 'secondary';
 }

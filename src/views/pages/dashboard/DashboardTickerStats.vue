@@ -13,31 +13,38 @@
         #[`item.${header.value}`]="{ item }"
       >
         <div :key="header.value">
-          <v-chip v-if="header.value === 'ticker'" small outlined>
-            <div>
-              {{ item.ticker }}
-            </div>
-          </v-chip>
+          <div v-if="header.value === 'ticker'" class="text-base">
+            <code>&nbsp;{{ item.ticker }}&nbsp;</code>
+          </div>
+          <div v-else-if="header.value === 'dayChange'">
+            <samp class="text-no-wrap">
+              {{ toCurrency(getDayChange(item)) }} /
+              <samp
+                :class="`${getTrendColor(getDayChangePercentages(item))}--text`
+                "
+              >{{ toUDPercentage(getDayChangePercentages(item)) }}</samp>
+            </samp>
+          </div>
           <vue-apex-charts
             v-if="header.value === 'dayTrend'"
-            :key="item.__chartKey__"
-            :options="sparklineOptions(item.vClose - item.sumHoldingCost, 50, 20)"
+            :key="item.chartKey"
+            :options="sparklineOptions(getDayChangePercentages(item), 120, 30)"
             :series="item.tSeries"
-            :width="$vuetify.breakpoint.mdAndUp ? 120 : 100"
+            :width="$vuetify.breakpoint.mdAndUp ? 120 : 120"
             height="32"
             class="pr-0 mr-n2"
             @updated="handleChartRedraw(item)"
           />
           <div v-else-if="header.value === 'PNL'">
-            <v-menu offset-overflow>
+            <v-menu open-on-hover left offset-y>
               <template v-slot:activator="{ on, attrs }">
-                <a v-bind="attrs" class="pa-0 mx-0 secondary--text" v-on="on">
+                <a v-bind="attrs" class="pa-0 mx-0 text--primary" v-on="on">
                   <samp>{{ toCurrency(getPNL(item)) }}</samp>
                 </a>
               </template>
-              <v-card max-width="18em">
+              <v-card max-width="18em" min-width="15em">
                 <v-card-text class="info white--text py-2 px-4">
-                  <span class="font-weight-bold">{{ item.ticker }}</span> - Profit &amp; Loss
+                  <span class="font-weight-bold">{{ item.ticker }}</span> - profits &amp; losses
                 </v-card-text>
                 <v-card-text class="caption pa-2">
                   <v-row no-gutters>
@@ -112,13 +119,13 @@
             </samp>
           </div>
           <div v-else-if="header.value === 'txCost'">
-            <v-menu offset-overflow>
+            <v-menu open-on-hover left offset-y>
               <template v-slot:activator="{ on, attrs }">
-                <a v-bind="attrs" class="pa-0 mx-0 secondary--text" v-on="on">
+                <a v-bind="attrs" class="pa-0 mx-0 text--primary" v-on="on">
                   <samp>{{ toCurrency(getTxCost(item)) }}</samp>
                 </a>
               </template>
-              <v-card max-width="15em">
+              <v-card max-width="15em" min-width="12em">
                 <v-card-text class="white--text error py-2 px-4">
                   <span class="font-weight-bold">{{ item.ticker }}</span> - transaction cost
                 </v-card-text>
@@ -229,22 +236,25 @@ export default {
             text: 'Ticker', value: 'ticker', align: 'center',
           },
           {
+            text: 'Day Change', value: 'dayChange', align: 'end',
+          },
+          {
             text: 'Day Trend', value: 'dayTrend',
-          },
-          {
-            text: 'Total P/L%', value: 'PNL%', type: '%', align: 'end',
-          },
-          {
-            text: 'P/L', value: 'PNL', type: '$', align: 'end',
           },
           {
             text: 'Price', value: 'pClose', type: '$', align: 'end',
           },
           {
+            text: 'Shares', value: 'qtyHold', type: '#', align: 'end',
+          },
+          {
             text: 'Avg. Cost', value: 'avgCost', type: '$', align: 'end',
           },
           {
-            text: 'Shares', value: 'qtyHold', type: '#', align: 'end',
+            text: 'P/L%', value: 'PNL%', type: '%', align: 'end',
+          },
+          {
+            text: 'P/L', value: 'PNL', type: '$', align: 'end',
           },
           {
             text: 'Holding Value', value: 'vClose', type: '$', align: 'end',
@@ -263,7 +273,7 @@ export default {
           text: 'Ticker', value: 'ticker', type: 'T', align: 'center',
         },
         {
-          text: 'Total P/L%', value: 'PNL%', type: '%', align: 'end',
+          text: 'P/L%', value: 'PNL%', type: '%', align: 'end',
         },
         {
           text: 'P/L', value: 'PNL', type: '$', align: 'end',
@@ -287,6 +297,28 @@ export default {
     },
   },
   methods: {
+    getDayChange(item) {
+      const data = item?.tSeries[0]?.data;
+      if (Array.isArray(data) && data.length) {
+        const open = data[0].y;
+        const current = data[data.length - 1].y;
+
+        return (current - open) * item.qtyHold;
+      }
+
+      return 0;
+    },
+    getDayChangePercentages(item) {
+      const data = item?.tSeries[0]?.data;
+      if (Array.isArray(data) && data.length) {
+        const open = data[0].y;
+        const current = data[data.length - 1].y;
+
+        return current / open - 1.0;
+      }
+
+      return 0;
+    },
     getTxCost(item) {
       return item.sumTaxDividend + item.sumTaxCgain + item.sumTxFee;
     },
@@ -346,6 +378,7 @@ export default {
     },
     handleChartRedraw(item) {
       this.$nextTick(() => {
+        item.chartKey = new Date().toUTCString();
       });
     },
   },

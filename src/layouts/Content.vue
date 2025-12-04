@@ -8,43 +8,24 @@
       color="transparent"
     >
       <div class="boxed-container w-full">
-        <div class="d-flex align-center mx-6">
+        <div class="d-flex align-center mx-5">
           <!-- Left Content -->
           <v-app-bar-nav-icon
             class="d-block d-lg-none me-2"
             @click="isDrawerOpen = !isDrawerOpen"
           />
-          <v-text-field
-            rounded
-            dense
-            outlined
-            :prepend-inner-icon="icons.mdiMagnify"
-            class="app-bar-search flex-grow-0"
-            hide-details
-          />
-
+          <code class="me-2">
+            <v-icon v-if="$vuetify.breakpoint.mdAndUp" small class="mt-n1">{{ icons.mdiWebClock }}</v-icon>
+            NYSE</code>
+          <samp :class="$vuetify.breakpoint.mdAndUp ? 'text-sm' : 'text-xs'">{{ nyseTimeStr }}</samp>
+          <span v-if="$vuetify.breakpoint.mdAndUp">
+            <code class="ms-10 me-2">
+              <v-icon small class="mt-n1">{{ icons.mdiClockOutline }}</v-icon>
+              LOCAL</code>
+            <samp class="text-sm">{{ localTimeStr }}</samp>
+          </span>
           <v-spacer />
-
-          <!-- Right Content -->
-          <a
-            href="https://github.com/themeselection/materio-vuetify-vuejs-admin-template-free"
-            target="_blank"
-            rel="nofollow"
-          >
-            <v-icon class="ms-6 me-4">
-              {{ icons.mdiGithub }}
-            </v-icon>
-          </a>
           <theme-switcher />
-          <v-btn
-            icon
-            small
-            class="ms-3"
-          >
-            <v-icon>
-              {{ icons.mdiBellOutline }}
-            </v-icon>
-          </v-btn>
           <app-bar-user-menu />
         </div>
       </div>
@@ -71,23 +52,6 @@
             <v-icon small class="me-n1 flip-horizontal">{{ icons.mdiKnife }}</v-icon>
             Goooooose
           </span>
-          <span class="d-sm-inline d-none">
-            <a
-              href="https://themeselection.com/products/category/download-free-admin-templates/"
-              target="_blank"
-              class="me-6 text--secondary text-decoration-none"
-            >Freebies</a>
-            <a
-              href="https://themeselection.com/blog/"
-              target="_blank"
-              class="me-6 text--secondary text-decoration-none"
-            >Blog</a>
-            <a
-              href="https://github.com/themeselection/materio-vuetify-vuejs-admin-template-free/blob/main/LICENSE"
-              target="_blank"
-              class="text--secondary text-decoration-none"
-            >MIT Licence</a>
-          </span>
         </div>
       </div>
     </v-footer>
@@ -95,9 +59,12 @@
 </template>
 
 <script>
-import { ref } from '@vue/composition-api';
 import {
-  mdiMagnify, mdiBellOutline, mdiGithub, mdiKnife,
+  mdiBellOutline,
+  mdiClockOutline,
+  mdiWebClock,
+  mdiGithub,
+  mdiKnife,
 } from '@mdi/js';
 import VerticalNavMenu from './components/vertical-nav-menu/VerticalNavMenu.vue';
 import ThemeSwitcher from './components/ThemeSwitcher.vue';
@@ -109,20 +76,56 @@ export default {
     ThemeSwitcher,
     AppBarUserMenu,
   },
-  setup() {
-    const isDrawerOpen = ref(null);
 
+  data() {
     return {
-      isDrawerOpen,
-
-      // Icons
+      isDrawerOpen: null,
+      currentTime: new Date(),
       icons: {
-        mdiMagnify,
         mdiBellOutline,
+        mdiClockOutline,
+        mdiWebClock,
         mdiGithub,
         mdiKnife,
       },
     };
+  },
+
+  computed: {
+    localTimeStr() {
+      return this.currentTime.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false, // Use 12-hour format (e.g., PM/AM)
+        timeZoneName: 'short', // Include the time zone abbreviation (e.g., EST/EDT)
+      });
+    },
+    nyseTimeStr() {
+      return this.currentTime.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false, // Use 12-hour format (e.g., PM/AM)
+        timeZoneName: 'short', // Include the time zone abbreviation (e.g., EST/EDT)
+      });
+    },
+  },
+
+  mounted() {
+    this.timer = setInterval(() => {
+      this.currentTime = new Date();
+    }, 1000);
+  },
+  beforeDestroy() {
+    clearInterval(this.timer);
   },
 };
 </script>

@@ -1,6 +1,6 @@
 <template>
   <v-card flat :disabled="loading">
-    <v-form>
+    <v-form ref="form">
       <div class="px-3">
         <v-card-text class="pt-5">
           <v-row>
@@ -12,7 +12,7 @@
             <v-col cols="12" sm="8" md="6">
               <!-- current password -->
               <v-text-field
-                v-model="value.oldPassword"
+                v-model="localForm.oldPassword"
                 :type="oldVisible ? 'text' : 'password'"
                 :append-icon="oldVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
                 :rules="[required]"
@@ -26,7 +26,7 @@
 
               <!-- new password -->
               <v-text-field
-                v-model="value.newPassword"
+                v-model="localForm.newPassword"
                 :type="newVisible ? 'text' : 'password'"
                 :append-icon="newVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
                 :rules="[required]"
@@ -38,7 +38,7 @@
 
               <!-- confirm password -->
               <v-text-field
-                v-model="value.checkPassword"
+                v-model="localForm.checkPassword"
                 :type="checkVisible ? 'text' : 'password'"
                 :append-icon="checkVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
                 :rules="[required, doubleCheck]"
@@ -71,7 +71,7 @@
           <v-btn
             color="primary"
             class="me-3 mt-3"
-            @click="$emit('update')"
+            @click="$emit('save', localForm)"
           >
             Update
           </v-btn>
@@ -79,9 +79,9 @@
             color="secondary"
             outlined
             class="mt-3"
-            @click="$emit('reset')"
+            @click="resetForm()"
           >
-            Cancel
+            Reset
           </v-btn>
         </v-card-text>
       </div>
@@ -99,16 +99,16 @@ export default {
       default: false,
       type: Boolean,
     },
-    value: {
-      default: null,
-      type: Object,
-      required: true,
-    },
   },
   data: () => ({
     oldVisible: false,
     newVisible: false,
     checkVisible: false,
+    localForm: {
+      oldPassword: '',
+      newPassword: '',
+      checkPassword: '',
+    },
     icons: {
       mdiKeyOutline,
       mdiLockOpenOutline,
@@ -121,7 +121,12 @@ export default {
       return !!v || 'Field is required';
     },
     doubleCheck(v) {
-      return v === this.value.newPassword || 'Must be the same';
+      return v === this.localForm.newPassword || 'Must be the same';
+    },
+    resetForm() {
+      if (this.$refs?.form) {
+        this.$refs.form.reset();
+      }
     },
   },
 };

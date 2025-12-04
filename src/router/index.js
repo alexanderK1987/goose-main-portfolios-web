@@ -45,6 +45,11 @@ const routes = [
     component: () => import('@/views/pages/account-settings/AccountSettings.vue'),
   },
   {
+    path: '/pages/portfolio-settings',
+    name: 'pages-portfolio-settings',
+    component: () => import('@/views/pages/portfolio-settings/PortfolioSettings.vue'),
+  },
+  {
     path: '/pages/login',
     name: 'pages-login',
     component: () => import('@/views/pages/Login.vue'),

@@ -34,7 +34,7 @@
 
           <v-col md="6" cols="12">
             <v-text-field
-              v-model="value.nickname"
+              v-model="localForm.nickname"
               label="Nickname"
               dense
               outlined
@@ -43,17 +43,17 @@
 
           <v-col cols="12" md="6">
             <v-text-field
-              v-model="value.email"
+              v-model="localForm.email"
               label="E-mail"
               dense
               outlined
             />
           </v-col>
-          <v-col cols="12" md="12" class="d-flex justify-end flex-wrap">
-            <v-btn color="primary" class="me-3 mt-4" @click="$emit('update')">
+          <v-col cols="12" md="12" class="d-flex justify-end">
+            <v-btn color="primary" class="me-3 mt-4" @click="$emit('save', localForm)">
               Update
             </v-btn>
-            <v-btn color="secondary" outlined class="mt-4" @click="$emit('reset')">
+            <v-btn color="secondary" outlined class="mt-4" @click="resetForm()">
               Reset
             </v-btn>
           </v-col>
@@ -72,19 +72,25 @@ import {
   mdiChessPawn,
 } from '@mdi/js';
 
+const makeProfileForm = ({ nickname, email }) => ({
+  nickname: nickname || '',
+  email: email || '',
+});
+
 export default {
   props: {
+    value: {
+      default: () => ({}),
+      type: Object,
+      required: true,
+    },
     loading: {
       default: false,
       type: Boolean,
     },
-    value: {
-      default: null,
-      type: Object,
-      required: true,
-    },
   },
   data: () => ({
+    localForm: makeProfileForm({}),
     icons: {
       mdiAlertOutline,
       mdiAccountHeartOutline,
@@ -93,5 +99,17 @@ export default {
       mdiChessPawn,
     },
   }),
+  watch: {
+    value: {
+      handler(inputValue) {
+        this.localForm = makeProfileForm(inputValue);
+      },
+    },
+  },
+  methods: {
+    resetForm() {
+      this.localForm = makeProfileForm(this.value);
+    },
+  },
 };
 </script>
