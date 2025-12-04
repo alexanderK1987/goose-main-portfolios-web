@@ -92,6 +92,7 @@ export default {
   },
   data: () => ({
     loading: false,
+    refreshInterval: null,
     portfolioIdx: 0,
     portfolios: [],
     portfolioLastMarketDayData: {},
@@ -167,6 +168,11 @@ export default {
       this.getMyPortfolioTickerStats();
     },
   },
+  beforeDestroy() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  },
   async created() {
     this.loading = true;
     await this.getMyPortfolios();
@@ -176,6 +182,12 @@ export default {
     this.loading = false;
     this.detectUrlFragment();
     this.updateUrlFragment();
+  },
+  mounted() {
+    // 10 minutes refresh
+    this.refreshInterval = setInterval(() => {
+      this.triggerRefresh();
+    }, 60000 * 10);
   },
   methods: {
     pickPortfolioByIndex(pickerIdx) {

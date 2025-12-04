@@ -16,14 +16,15 @@
           <div v-if="header.value === 'ticker'" class="text-base">
             <code>&nbsp;{{ item.ticker }}&nbsp;</code>
           </div>
-          <div v-else-if="header.value === 'dayChange'">
-            <samp class="text-no-wrap">
-              {{ toCurrency(getDayChange(item)) }} /
-              <samp
-                :class="`${getTrendColor(getDayChangePercentages(item))}--text`
-                "
-              >{{ toUDPercentage(getDayChangePercentages(item)) }}</samp>
+          <div v-else-if="header.value === 'dayChange'" class="text-no-wrap">
+            <samp class="text--primary">
+              {{ toCurrency(getDayChange(item)) }}
             </samp>
+            <span class="pe-2 secondary--text text-lg">/</span>
+            <samp
+              :class="`${getTrendColor(getDayChangePercentages(item))}--text`
+              "
+            >{{ toUDPercentage(getDayChangePercentages(item)) }}</samp>
           </div>
           <vue-apex-charts
             v-if="header.value === 'dayTrend'"
