@@ -75,7 +75,7 @@
         :to="{ name: 'pages-account-settings' }"
         :icon="icons.mdiAccountCogOutline"
       />
-      <nav-menu-section-title title="TOOLS" />
+      <!-- <nav-menu-section-title title="TOOLS" />
       <nav-menu-link
         title="Typography"
         :to="{ name: 'typography' }"
@@ -100,7 +100,7 @@
         title="Form Layouts"
         :to="{ name: 'form-layouts' }"
         :icon="icons.mdiFormSelect"
-      />
+      /> -->
     </v-list>
     <a
       href="https://themeselection.com/products/materio-vuetify-vuejs-admin-template"
