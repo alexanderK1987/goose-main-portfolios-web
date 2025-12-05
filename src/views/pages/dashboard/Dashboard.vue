@@ -4,7 +4,8 @@
       <dashboard-picker-and-stats
         v-model="portfolioIdx"
         :portfolios="portfolios"
-        :portfolio-latest-data-point="portfolioLastMarketDayData"
+        :last-market-day-data="lastMarketDayData || {}"
+        :penultimate-market-day-data="penultimateMarketDayData || {}"
         :loading="loading"
         class="flex-grow-1 fill-height"
         @pick-portfolio="pickPortfolioByIndex($event)"
@@ -13,7 +14,8 @@
     </v-col>
     <v-col cols="12" md="4" class="d-flex flex-column">
       <dashboard-goal-to-one-million
-        v-model="portfolioLastMarketDayData.vClose"
+        v-if="lastMarketDayData"
+        v-model="lastMarketDayData.vClose"
         class="flex-grow-1 fill-height"
       />
     </v-col>
@@ -44,7 +46,12 @@
           </v-btn>
         </v-card-title>
         <v-card-text>
-          <dashboard-ticker-stats v-if="showHoldings" :value="holdingPositionStats" />
+          <dashboard-ticker-stats
+            v-if="showHoldings"
+            :value="holdingPositionStats"
+            :last-market-day-data="lastMarketDayData || {}"
+            :penultimate-market-day-data="penultimateMarketDayData || {}"
+          />
           <v-divider v-else />
         </v-card-text>
         <v-card-title class="pb-3">
@@ -61,6 +68,8 @@
             v-if="showClosedPositions"
             is-closed-stats
             :value="closedPositionStats"
+            :last-market-day-data="{}"
+            :penultimate-market-day-data="{}"
           />
           <v-divider v-else />
         </v-card-text>
@@ -95,7 +104,7 @@ export default {
     refreshInterval: null,
     portfolioIdx: 0,
     portfolios: [],
-    portfolioLastMarketDayData: {},
+    portfolioLastMarketDays: [],
     portfolioTSeriesPeriod: '1m',
     portfolioTSeriesMaps: {},
     visibleTSeries: [],
@@ -111,13 +120,19 @@ export default {
     portfolio() {
       return Array.isArray(this.portfolios) ? this.portfolios[this.portfolioIdx] : {};
     },
+    lastMarketDayData() {
+      return (Array.isArray(this.portfolioLastMarketDays)) ? this.portfolioLastMarketDays[0] : null;
+    },
+    penultimateMarketDayData() {
+      return (Array.isArray(this.portfolioLastMarketDays)) ? this.portfolioLastMarketDays[1] : null;
+    },
     compositionData() {
-      if (Array.isArray(this.portfolioLastMarketDayData?.positions)) {
-        const { positions } = this.portfolioLastMarketDayData;
+      if (Array.isArray(this.lastMarketDayData?.positions)) {
+        const { positions } = this.lastMarketDayData;
         const sortedPositions = [...positions].sort((a, b) => b.vClose - a.vClose);
 
         return [
-          { value: this.portfolioLastMarketDayData.cashClose, ticker: '$Cash' },
+          { value: this.lastMarketDayData.cashClose, ticker: '$Cash' },
           ...sortedPositions.map(p => ({ value: p.vClose, ticker: p.ticker })),
         ];
       }
@@ -125,8 +140,8 @@ export default {
       return [];
     },
     holdingPositionStats() {
-      if (this.portfolioLastMarketDayData && Array.isArray(this.portfolioTickerStats?.positions)) {
-        const holdingPositions = this.portfolioLastMarketDayData.positions || [];
+      if (this.lastMarketDayData && Array.isArray(this.portfolioTickerStats?.positions)) {
+        const holdingPositions = this.lastMarketDayData.positions || [];
         const holdingMap = {};
         for (const position of holdingPositions) {
           holdingMap[position.ticker] = position;
@@ -162,7 +177,7 @@ export default {
   watch: {
     portfolioIdx() {
       this.updateUrlFragment();
-      this.getPortfolioLastMarketDayData();
+      this.getportfolioLastMarketDays();
       this.portfolioTSeriesMaps = {};
       this.getMyPortfolioTSeries();
       this.getMyPortfolioTickerStats();
@@ -176,7 +191,7 @@ export default {
   async created() {
     this.loading = true;
     await this.getMyPortfolios();
-    this.getPortfolioLastMarketDayData();
+    this.getportfolioLastMarketDays();
     this.getMyPortfolioTSeries();
     this.getMyPortfolioTickerStats();
     this.loading = false;
@@ -213,14 +228,14 @@ export default {
         console.error(err);
       }
     },
-    async getPortfolioLastMarketDayData() {
+    async getportfolioLastMarketDays() {
       if (!this.portfolio) {
         return;
       }
       try {
-        const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.portfolioLastMarketDayData(this.portfolio._id)}`;
+        const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.portfolioLastMarketDays(this.portfolio._id)}`;
         const response = await this.$api.get(REQ_URL);
-        this.portfolioLastMarketDayData = snakeToCamel(response.data) || {};
+        this.portfolioLastMarketDays = snakeToCamel(response.data) || {};
       } catch (err) {
         console.error(err);
       }
@@ -301,7 +316,7 @@ export default {
     async triggerRefresh() {
       this.loading = true;
       try {
-        await this.getPortfolioLastMarketDayData();
+        await this.getportfolioLastMarketDays();
         await this.getMyPortfolioTSeries();
         await this.getMyPortfolioTickerStats();
       } catch (e) {

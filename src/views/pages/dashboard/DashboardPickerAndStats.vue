@@ -48,8 +48,8 @@
     <v-card-subtitle class="d-flex flex-wrap justify-start align-center pt-1">
       <span class="caption me-4 pb-2">
         Market day
-        <v-chip v-if="portfolioLatestDataPoint" dense small class="my-n3 py-0">
-          {{ toLocaleDateString(portfolioLatestDataPoint.timestamp) }}
+        <v-chip v-if="lastMarketDayData" dense small class="my-n3 py-0">
+          {{ toLocaleDateString(lastMarketDayData.timestamp) }}
         </v-chip>
       </span>
       <span class="caption me-4 pb-2">
@@ -136,7 +136,12 @@ export default {
       required: true,
       default: () => ([]),
     },
-    portfolioLatestDataPoint: {
+    lastMarketDayData: {
+      type: Object,
+      required: true,
+      default: () => ({}),
+    },
+    penultimateMarketDayData: {
       type: Object,
       required: true,
       default: () => ({}),
@@ -169,18 +174,19 @@ export default {
       return Array.isArray(this.portfolios) ? this.portfolios[this.value] : {};
     },
     statisticsData() {
-      const latestCloseValue = this.portfolioLatestDataPoint?.vClose;
-      const latestOpenValue = this.portfolioLatestDataPoint?.vOpen;
-      const dailyDiff = latestCloseValue - latestOpenValue;
-      const dailyDiffPercentages = dailyDiff / latestOpenValue;
+      const baseValue = this.penultimateMarketDayData?.vClose || this.lastMarketDayData?.vOpen || 0;
+      const lastValue = this.lastMarketDayData?.vClose || 0;
+
+      const dailyDiff = lastValue - baseValue;
+      const dailyDiffPercentages = dailyDiff / baseValue;
       const principals = (this.portfolio?.sumDeposit - this.portfolio?.sumWithdraw) || 0;
-      const totalProfitAndLoss = latestCloseValue - principals;
+      const totalProfitAndLoss = this.lastMarketDayData ? (lastValue - principals) : principals;
       const totalProfitAndLossPercentages = totalProfitAndLoss / principals;
 
       return [
         {
           title: 'Net Value',
-          content: toCurrency(this.portfolioLatestDataPoint?.vClose),
+          content: toCurrency(this.lastMarketDayData?.vClose),
           icon: mdiCurrencyUsd,
           color: 'warning',
         },

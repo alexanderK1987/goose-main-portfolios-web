@@ -218,6 +218,16 @@ export default {
       type: Boolean,
       default: false,
     },
+    lastMarketDayData: {
+      type: Object,
+      required: true,
+      default: () => ({}),
+    },
+    penultimateMarketDayData: {
+      type: Object,
+      required: true,
+      default: () => ({}),
+    },
   },
   data: () => ({
     sparklineOptions,
@@ -298,13 +308,42 @@ export default {
     },
   },
   methods: {
+    getBasePrice(item) {
+      const penultimatePositions = this.penultimateMarketDayData?.positions;
+      if (Array.isArray(penultimatePositions)) {
+        const basePosition = penultimatePositions.find(p => p.ticker === item.ticker);
+        if (basePosition) {
+          console.log('PEN PCLOSE');
+
+          return basePosition.pClose;
+        }
+      }
+      const data = item?.tSeries[0]?.data;
+      if (Array.isArray(data) && data.length) {
+        console.log('SERIES 0');
+
+        return data[0].y;
+      }
+
+      const lastPositions = this.lastMarketDayData?.positions;
+      if (Array.isArray(lastPositions)) {
+        const basePosition = lastPositions.find(p => p.ticker === item.ticker);
+        if (basePosition) {
+          console.log('LAST POPEN');
+
+          return basePosition.pOpen;
+        }
+      }
+
+      return 0;
+    },
     getDayChange(item) {
       const data = item?.tSeries[0]?.data;
       if (Array.isArray(data) && data.length) {
-        const open = data[0].y;
+        const base = this.getBasePrice(item);
         const current = data[data.length - 1].y;
 
-        return (current - open) * item.qtyHold;
+        return (current - base) * item.qtyHold;
       }
 
       return 0;
@@ -312,10 +351,10 @@ export default {
     getDayChangePercentages(item) {
       const data = item?.tSeries[0]?.data;
       if (Array.isArray(data) && data.length) {
-        const open = data[0].y;
+        const base = this.getBasePrice(item);
         const current = data[data.length - 1].y;
 
-        return current / open - 1.0;
+        return current / base - 1.0;
       }
 
       return 0;
