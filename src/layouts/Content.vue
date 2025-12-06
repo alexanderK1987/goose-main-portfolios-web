@@ -93,6 +93,8 @@ export default {
 
   data() {
     return {
+      clockTimer: null,
+      marketOpenCheckTimer: null,
       marketOpenData: null,
       isDrawerOpen: null,
       currentTime: new Date(),
@@ -147,12 +149,17 @@ export default {
   },
 
   mounted() {
-    this.timer = setInterval(() => {
+    this.clockTimer = setInterval(() => {
       this.currentTime = new Date();
-    }, 1000);
+    }, 1e3);
+    this.getMarketOpenInfo();
+    this.marketOpenCheckTimer = setInterval(() => {
+      this.getMarketOpenInfo();
+    }, 1e3 * 3600);
   },
   beforeDestroy() {
-    clearInterval(this.timer);
+    if (this.clockTimer) clearInterval(this.clockTimer);
+    if (this.marketOpenCheckTimer) clearInterval(this.marketOpenCheckTimer);
   },
   methods: {
     async getMarketOpenInfo() {

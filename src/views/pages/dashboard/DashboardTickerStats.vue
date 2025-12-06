@@ -30,7 +30,7 @@
             v-if="header.value === 'dayTrend'"
             :key="item.chartKey"
             :options="sparklineOptions(getDayChangePercentages(item), 120, 30)"
-            :series="item.tSeries"
+            :series="toSparklineData(item)"
             :width="$vuetify.breakpoint.mdAndUp ? 120 : 120"
             height="32"
             class="pr-0 mr-n2"
@@ -332,26 +332,20 @@ export default {
       return 0;
     },
     getDayChange(item) {
-      const data = item?.tSeries[0]?.data;
-      if (Array.isArray(data) && data.length) {
-        const base = this.getBasePrice(item);
-        const current = data[data.length - 1].y;
+      if (!(Array.isArray(item.tSeries) && item.tSeries.length)) return 0;
 
-        return (current - base) * item.qtyHold;
-      }
+      const base = this.getBasePrice(item);
+      const current = item.tSeries[item.tSeries.length - 1].pClose;
 
-      return 0;
+      return (current - base) * item.qtyHold;
     },
     getDayChangePercentages(item) {
-      const data = item?.tSeries[0]?.data;
-      if (Array.isArray(data) && data.length) {
-        const base = this.getBasePrice(item);
-        const current = data[data.length - 1].y;
+      if (!(Array.isArray(item.tSeries) && item.tSeries.length)) return 0;
 
-        return current / base - 1.0;
-      }
+      const base = this.getBasePrice(item);
+      const current = item.tSeries[item.tSeries.length - 1].pClose;
 
-      return 0;
+      return current / base - 1.0;
     },
     getTxCost(item) {
       return item.sumTaxDividend + item.sumTaxCgain + item.sumTxFee;
@@ -414,6 +408,42 @@ export default {
       this.$nextTick(() => {
         item.chartKey = new Date().toUTCString();
       });
+    },
+
+    isMarketOpenPeriod(timestamp) {
+      const timeString = timestamp.split('T')[1];
+
+      return timeString >= '09:30' && timeString <= '16:00';
+    },
+    toSparklineData(item) {
+      if (!Array.isArray(item?.tSeries)) return null;
+      const dataPoints = item.tSeries.map(dataPoint => ({
+        x: new Date(dataPoint.timestamp).getTime(),
+        y: dataPoint.pClose,
+        o: this.isMarketOpenPeriod(dataPoint.timestamp),
+      }));
+
+      console.log(dataPoints.filter(p => p.o));
+      const chartSeries = [
+        // full day trend
+        { name: 'F', data: dataPoints },
+
+        // market opened segment
+        { name: 'O', data: dataPoints.filter(p => p.o) },
+      ];
+
+      // baseline
+      const baseLine = [
+        { x: dataPoints[0].x, y: this.getBasePrice(item) },
+        { x: dataPoints[dataPoints.length - 1].x, y: this.getBasePrice(item) },
+      ];
+
+      chartSeries.push({
+        name: 'baseline',
+        data: baseLine,
+      });
+
+      return chartSeries;
     },
   },
 };

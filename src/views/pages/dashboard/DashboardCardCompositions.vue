@@ -12,12 +12,12 @@
         </v-chip>
       </v-chip-group>
     </v-card-title>
-    <v-card-text class="py-0 my-0">
+    <v-card-text class="pt-1 pb-0 my-0 ">
       <vue-apex-charts
         v-if="Array.isArray(chartData) && chartOptions"
         :options="chartOptions"
         :series="chartData"
-        :height="chartHeight"
+        height="300"
         @updated="handleChartRedraw"
       />
     </v-card-text>
@@ -47,7 +47,6 @@ export default {
     groupMinors: true,
     icons: { mdiDotsVertical, mdiMenuUp },
     chartLabelLocations: 'right',
-    chartHeight: 300,
   }),
   computed: {
     totalValue() {
@@ -109,7 +108,7 @@ export default {
         const container = this.$refs?.chartContainer?.$el;
         if (container) {
           // Update the data properties that the computed property depends on
-          if (container.offsetHeight > container.offsetWidth * 0.9) {
+          if (container.offsetHeight > container.offsetWidth * 1) {
             this.chartLabelLocations = 'bottom';
           } else {
             this.chartLabelLocations = 'right';
@@ -120,3 +119,8 @@ export default {
   },
 };
 </script>
+<style>
+.apexcharts-legend-text {
+  padding-left: 0 !important;
+}
+</style>

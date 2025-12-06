@@ -1,8 +1,12 @@
 import { toCurrency, toPercentage, toLocaleDateString } from './numberTools';
 
-export const apexUpColor = '#00A726';
-export const apexDownColor = '#CF403C';
-export const apexFlatColor = '#888';
+export const apexUpColor = '#00AA2688';
+export const apexUpColorStrong = '#00AA26';
+export const apexDownColor = '#DD444488';
+export const apexDownColorStrong = '#DD4444';
+export const apexFlatColor = '#88888899';
+export const apexFlatColorStrong = '#888888';
+export const apexAxisColor = '#888888CC';
 
 export const sparklineOptions = (trend, width = 120, height = 25) => ({
   chart: {
@@ -12,14 +16,19 @@ export const sparklineOptions = (trend, width = 120, height = 25) => ({
     sparkline: {
       enabled: true, // Recommended for sparklines, simplifies configuration
     },
+    animations: { enabled: false },
   },
   xaxis: {
     type: 'datetime',
   },
   stroke: {
-    width: [1.5, 0.4],
+    width: [1.0, 1.99, 0.4],
     curve: 'smooth',
-    colors: [trend > 0 ? apexUpColor : trend < 0 ? apexDownColor : apexFlatColor, apexFlatColor],
+    colors: [
+      trend > 0 ? apexUpColor : trend < 0 ? apexDownColor : apexFlatColor,
+      trend > 0 ? apexUpColorStrong : trend < 0 ? apexDownColorStrong : apexFlatColorStrong,
+      apexAxisColor,
+    ],
   },
 
   // Ensure all axis and data labels are off
@@ -45,10 +54,6 @@ export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocati
   legend: {
     position: chartLabelLocations || 'right',
     horizontalAlign: 'center',
-    itemMargin: {
-      horizontal: 2,
-      vertical: 4,
-    },
   },
   tooltip: { enabled: false },
   plotOptions: {

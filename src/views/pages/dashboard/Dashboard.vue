@@ -25,7 +25,7 @@
         v-model="portfolioTSeriesPeriod"
         :time-series="visibleTSeries"
         class="flex-grow-1 fill-height"
-        @change="switchTSeries($event)"
+        @change="changeTSeriesPeriods($event)"
       />
     </v-col>
     <v-col cols="12" md="4" class="d-flex flex-column">
@@ -255,7 +255,7 @@ export default {
         console.error(err);
       }
     },
-    async switchTSeries(seriesMode) {
+    async changeTSeriesPeriods(seriesMode) {
       this.portfolioTSeriesPeriod = seriesMode;
       if (Array.isArray(this.portfolioTSeriesMaps[this.portfolioTSeriesPeriod])) {
         this.visibleTSeries = this.portfolioTSeriesMaps[this.portfolioTSeriesPeriod];
@@ -273,21 +273,7 @@ export default {
         for (const stat of portfolioTickerStats.positions) {
           if (stat.qtyHold > 1e-5) {
             // eslint-disable-next-line no-await-in-loop
-            const tSeries = await this.getTickerDailyTimeSeries(stat.ticker);
-            stat.tSeries = [{ name: 'day trend', data: tSeries }];
-
-            // baseline
-            if (Array.isArray(tSeries) && tSeries.length) {
-              const baseLine = [
-                { x: tSeries[0].x, y: tSeries[0].y },
-                { x: tSeries[tSeries.length - 1].x, y: tSeries[0].y },
-              ];
-
-              stat.tSeries.push({
-                name: 'baseline',
-                data: baseLine,
-              });
-            }
+            stat.tSeries = await this.getTickerDailyTimeSeries(stat.ticker);
           }
         }
         this.portfolioTickerStats = portfolioTickerStats;
@@ -303,10 +289,7 @@ export default {
         const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.marketInfoTickerTimeSeries(ticker)}`;
         const response = await this.$api.get(REQ_URL);
 
-        return Array.isArray(response.data) ? snakeToCamel(response.data).map(dataPoint => ({
-          x: new Date(dataPoint.timestamp).getTime(),
-          y: dataPoint.pClose,
-        })) : [];
+        return Array.isArray(response.data) ? snakeToCamel(response.data) : [];
       } catch (err) {
         console.error(err);
       }
