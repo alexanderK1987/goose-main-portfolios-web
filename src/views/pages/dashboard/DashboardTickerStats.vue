@@ -296,7 +296,7 @@ export default {
           text: 'Avg. Cost', value: 'closedAvgCost', type: '$', align: 'end',
         },
         {
-          text: 'Volumn', value: 'qtyAdded', type: '#', align: 'end',
+          text: 'Shares Held', value: 'qtyAdded', type: '#', align: 'end',
         },
         {
           text: 'Dividends', value: 'sumDividend', type: '$', align: 'end',
@@ -313,15 +313,11 @@ export default {
       if (Array.isArray(penultimatePositions)) {
         const basePosition = penultimatePositions.find(p => p.ticker === item.ticker);
         if (basePosition) {
-          console.log('PEN PCLOSE');
-
           return basePosition.pClose;
         }
       }
       const data = item?.tSeries[0]?.data;
       if (Array.isArray(data) && data.length) {
-        console.log('SERIES 0');
-
         return data[0].y;
       }
 
@@ -329,8 +325,6 @@ export default {
       if (Array.isArray(lastPositions)) {
         const basePosition = lastPositions.find(p => p.ticker === item.ticker);
         if (basePosition) {
-          console.log('LAST POPEN');
-
           return basePosition.pOpen;
         }
       }

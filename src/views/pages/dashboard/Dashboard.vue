@@ -300,7 +300,7 @@ export default {
         return [];
       }
       try {
-        const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.tickerDailyTSeries(ticker)}`;
+        const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.marketInfoTickerTimeSeries(ticker)}`;
         const response = await this.$api.get(REQ_URL);
 
         return Array.isArray(response.data) ? snakeToCamel(response.data).map(dataPoint => ({

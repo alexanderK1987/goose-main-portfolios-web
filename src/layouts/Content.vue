@@ -14,13 +14,24 @@
             class="d-block d-lg-none me-2"
             @click="isDrawerOpen = !isDrawerOpen"
           />
-          <code class="me-2">
-            <v-icon v-if="$vuetify.breakpoint.mdAndUp" small class="mt-n1">{{ icons.mdiWebClock }}</v-icon>
-            NYSE</code>
-          <samp :class="$vuetify.breakpoint.mdAndUp ? 'text-sm' : 'text-xs'">{{ nyseTimeStr }}</samp>
+          <code :class="['me-2', isMarketOpen?'warning--text':'']">
+            <v-icon
+              v-if="$vuetify.breakpoint.mdAndUp"
+              small
+              class="mt-n1 me-n1"
+              :color="isMarketOpen?'warning':''"
+            >
+              {{ isMarketOpen? icons.mdiWhiteBalanceSunny: icons.mdiWeatherNight }}
+            </v-icon>
+            NYSE
+          </code>
+          <samp :class="[
+            $vuetify.breakpoint.mdAndUp ? 'text-sm' : 'text-xs',
+          ]"
+          >{{ nyseTimeStr }}</samp>
           <span v-if="$vuetify.breakpoint.mdAndUp">
             <code class="ms-10 me-2">
-              <v-icon small class="mt-n1">{{ icons.mdiClockOutline }}</v-icon>
+              <v-icon small class="mt-n1 me-n1">{{ icons.mdiMapMarkerRadius }}</v-icon>
               LOCAL</code>
             <samp class="text-sm">{{ localTimeStr }}</samp>
           </span>
@@ -61,11 +72,14 @@
 <script>
 import {
   mdiBellOutline,
-  mdiClockOutline,
-  mdiWebClock,
+  mdiMapMarkerRadius,
+  mdiWeatherNight,
+  mdiWhiteBalanceSunny,
   mdiGithub,
   mdiKnife,
 } from '@mdi/js';
+import { snakeToCamel } from '@/utils/snakeCamelTools';
+import siteConfig from '@/../.siteConfig';
 import VerticalNavMenu from './components/vertical-nav-menu/VerticalNavMenu.vue';
 import ThemeSwitcher from './components/ThemeSwitcher.vue';
 import AppBarUserMenu from './components/AppBarUserMenu.vue';
@@ -79,12 +93,14 @@ export default {
 
   data() {
     return {
+      marketOpenData: null,
       isDrawerOpen: null,
       currentTime: new Date(),
       icons: {
         mdiBellOutline,
-        mdiClockOutline,
-        mdiWebClock,
+        mdiMapMarkerRadius,
+        mdiWeatherNight,
+        mdiWhiteBalanceSunny,
         mdiGithub,
         mdiKnife,
       },
@@ -92,6 +108,17 @@ export default {
   },
 
   computed: {
+    isMarketOpen() {
+      if (this?.marketOpenData) {
+        const marketOpenUtc = new Date(this.marketOpenData.marketOpenUtc);
+        const marketCloseUtc = new Date(this.marketOpenData.marketCloseUtc);
+        const now = new Date();
+
+        return now > marketOpenUtc && now < marketCloseUtc;
+      }
+
+      return false;
+    },
     localTimeStr() {
       return this.currentTime.toLocaleString('en-US', {
         year: 'numeric',
@@ -126,6 +153,18 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.timer);
+  },
+  methods: {
+    async getMarketOpenInfo() {
+      const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.marketInfoOpenInfo}`;
+      try {
+        // Call the API endpoint
+        const response = await this.$api.get(REQ_URL);
+        this.marketOpenData = snakeToCamel(response.data);
+      } catch {
+        console.log('cannot fetch market open info');
+      }
+    },
   },
 };
 </script>
