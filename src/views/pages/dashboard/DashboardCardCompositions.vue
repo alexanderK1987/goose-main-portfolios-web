@@ -120,7 +120,7 @@ export default {
 };
 </script>
 <style>
-.apexcharts-legend-text {
+span.apexcharts-legend-text {
   padding-left: 0 !important;
 }
 </style>

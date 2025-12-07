@@ -1,4 +1,6 @@
-import { toCurrency, toPercentage, toLocaleDateString } from './numberTools';
+import {
+  toCurrency, toAbbreviatedCurrency, toPercentage, toLocaleDateString,
+} from './numberTools';
 
 export const apexUpColor = '#00AA2688';
 export const apexUpColorStrong = '#00AA26';
@@ -8,11 +10,9 @@ export const apexFlatColor = '#88888899';
 export const apexFlatColorStrong = '#888888';
 export const apexAxisColor = '#888888CC';
 
-export const sparklineOptions = (trend, width = 120, height = 25) => ({
+export const sparklineOptions = trend => ({
   chart: {
     type: 'line',
-    height,
-    width,
     sparkline: {
       enabled: true, // Recommended for sparklines, simplifies configuration
     },
@@ -22,7 +22,7 @@ export const sparklineOptions = (trend, width = 120, height = 25) => ({
     type: 'datetime',
   },
   stroke: {
-    width: [1.0, 1.99, 0.4],
+    width: [0.6, 2, 0.4],
     curve: 'smooth',
     colors: [
       trend > 0 ? apexUpColor : trend < 0 ? apexDownColor : apexFlatColor,
@@ -126,8 +126,9 @@ export const dashboardCandlesticksOptions = {
     axisBorder: { show: true },
     axisTicks: { show: true },
     labels: {
-      offsetY: 3,
-      formatter: x => toCurrency(x, 0),
+      showDuplicates: false,
+      align: 'left',
+      formatter: x => toAbbreviatedCurrency(x, 0),
     },
   },
 

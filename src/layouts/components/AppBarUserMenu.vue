@@ -7,8 +7,8 @@
     content-class="user-profile-menu-content"
   >
     <template v-slot:activator="{ on, attrs }">
-      <v-badge bottom color="success" overlap offset-x="12" offset-y="12" class="ms-4" dot>
-        <v-avatar size="40px" v-bind="attrs" v-on="on">
+      <v-badge bottom color="success" overlap offset-x="12" offset-y="12" class="ms-2" dot>
+        <v-avatar size="32px" v-bind="attrs" v-on="on">
           <v-icon color="primary">
             {{ icons.mdiAccountCircle }}
           </v-icon>

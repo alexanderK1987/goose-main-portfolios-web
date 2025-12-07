@@ -11,6 +11,49 @@ export function toCurrency(number, digits) {
   });
 }
 
+export function toAbbreviatedCurrency(number, digits = 2) {
+  if (Number.isNaN(parseFloat(number)) || number === null || number === undefined) {
+    number = 0;
+  }
+
+  const num = parseFloat(number);
+  const tiers = [
+    { value: 1e15, symbol: 'Q' }, // Quadrillion
+    { value: 1e12, symbol: 'T' }, // Trillion
+    { value: 1e9, symbol: 'B' }, // Billion
+    { value: 1e6, symbol: 'M' }, // Million
+    { value: 1e3, symbol: 'K' }, // Thousand
+  ];
+
+  const tier = tiers.find(t => Math.abs(num) >= t.value);
+
+  if (tier) {
+    const abbreviation = (num / tier.value).toFixed(digits);
+    const suffix = tier.symbol;
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0, // We handle digits ourselves in 'abbreviation'
+      maximumFractionDigits: 0,
+    });
+
+    // Format a placeholder (like 1 or -1) to extract the currency symbol and sign.
+    const parts = formatter.formatToParts(num >= 0 ? 1 : -1);
+    const symbol = parts.find(p => p.type === 'currency')?.value || '$';
+
+    // Construct the final string: Symbol + Abbreviation + Suffix
+    return `${symbol}${abbreviation}${suffix}`;
+  }
+
+  // If the number is too small (less than 1,000) or zero, use your original function's logic
+  return (num).toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
+}
+
 export function toPercentage(number, withSign = true, fractionDigits = 2) {
   // Convert to number safely
   const parsedNumber = parseFloat(number);

@@ -3,37 +3,35 @@
     <vertical-nav-menu :is-drawer-open.sync="isDrawerOpen" />
     <v-app-bar
       app
-      flat
-      absolute
-      color="transparent"
+      dense
+      class="app-top-navigation-bar"
     >
-      <div class="boxed-container w-full">
-        <div class="d-flex align-center mx-5">
+      <div class="w-full">
+        <div class="d-flex align-center mx-2">
           <!-- Left Content -->
           <v-app-bar-nav-icon
-            class="d-block d-lg-none me-2"
+            class="me-3 pa-0"
+            style="width: 1.2em !important; height: 1.2em !important;"
             @click="isDrawerOpen = !isDrawerOpen"
-          />
-          <code :class="['me-2', isMarketOpen?'warning--text':'']">
+          >
+            <v-icon>{{ isDrawerOpen ? icons.mdiMenuOpen : icons.mdiMenu }}</v-icon>
+          </v-app-bar-nav-icon>
+          <code :class="['me-2', isMarketOpen?'warning--text':'', 'text-xs']">
             <v-icon
-              v-if="$vuetify.breakpoint.mdAndUp"
               small
-              class="mt-n1 me-n1"
+              class="mt-n1"
               :color="isMarketOpen?'warning':''"
             >
               {{ isMarketOpen? icons.mdiWhiteBalanceSunny: icons.mdiWeatherNight }}
             </v-icon>
             NYSE
           </code>
-          <samp :class="[
-            $vuetify.breakpoint.mdAndUp ? 'text-sm' : 'text-xs',
-          ]"
-          >{{ nyseTimeStr }}</samp>
+          <samp class="text-xs">{{ nyseTimeStr }}</samp>
           <span v-if="$vuetify.breakpoint.mdAndUp">
-            <code class="ms-10 me-2">
-              <v-icon small class="mt-n1 me-n1">{{ icons.mdiMapMarkerRadius }}</v-icon>
+            <code class="ms-4 me-2 text-xs">
+              <v-icon small class="mt-n1">{{ icons.mdiMapMarkerRadius }}</v-icon>
               LOCAL</code>
-            <samp class="text-sm">{{ localTimeStr }}</samp>
+            <samp class="text-xs">{{ localTimeStr }}</samp>
           </span>
           <v-spacer />
           <theme-switcher />
@@ -71,12 +69,12 @@
 
 <script>
 import {
-  mdiBellOutline,
   mdiMapMarkerRadius,
   mdiWeatherNight,
   mdiWhiteBalanceSunny,
-  mdiGithub,
   mdiKnife,
+  mdiMenu,
+  mdiMenuOpen,
 } from '@mdi/js';
 import { snakeToCamel } from '@/utils/snakeCamelTools';
 import siteConfig from '@/../.siteConfig';
@@ -99,12 +97,12 @@ export default {
       isDrawerOpen: null,
       currentTime: new Date(),
       icons: {
-        mdiBellOutline,
         mdiMapMarkerRadius,
         mdiWeatherNight,
         mdiWhiteBalanceSunny,
-        mdiGithub,
         mdiKnife,
+        mdiMenu,
+        mdiMenuOpen,
       },
     };
   },
@@ -177,27 +175,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.v-app-bar ::v-deep {
-  .v-toolbar__content {
-    padding: 0;
-
-    .app-bar-search {
-      .v-input__slot {
-        padding-left: 18px;
-      }
-    }
-  }
+@include theme(app-top-navigation-bar) using ($material) {
+  background-color: map-deep-get($material, 'background') !important;
 }
-
-.boxed-container {
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .flip-horizontal {
-  /* Applies a mirror effect along the vertical axis */
   transform: scaleX(-1);
-  /* Ensure the icon rotates from its center */
   transform-origin: center;
 }
 </style>
