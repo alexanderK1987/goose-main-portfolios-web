@@ -1,5 +1,134 @@
 <template>
   <v-card>
+    <v-menu
+      v-model="showTxCostMenu"
+      offset-y
+      absolute
+      :position-x="menuX"
+      :position-y="menuY"
+      close-on-content-click
+    >
+      <v-card v-if="menuTargetItem" max-width="15em" min-width="12em">
+        <v-card-text class="white--text error py-2 px-4">
+          <span class="font-weight-bold">{{ menuTargetItem.ticker }}</span> - transaction cost
+        </v-card-text>
+        <v-card-text class="caption pa-2">
+          <v-row no-gutters>
+            <v-col cols="1" />
+            <v-col cols="6">
+              Capital gain tax
+            </v-col>
+            <v-col cols="5" class="text-right">
+              <samp>{{ toCurrency(menuTargetItem.sumTaxCgain) }}</samp>
+            </v-col>
+            <v-col cols="1" />
+            <v-col cols="6">
+              Dividend tax
+            </v-col>
+            <v-col cols="5" class="text-right">
+              <samp>{{ toCurrency(menuTargetItem.sumTaxDividend) }}</samp>
+            </v-col>
+            <v-col cols="1">
+              +
+            </v-col>
+            <v-col cols="6">
+              Tx. fee
+            </v-col>
+            <v-col cols="5" class="text-right">
+              <samp>{{ toCurrency(menuTargetItem.sumTxFee) }}</samp>
+            </v-col>
+            <v-col cols="12">
+              <hr>
+            </v-col>
+            <v-col cols="1">
+              =
+            </v-col>
+            <v-col cols="6" class="font-weight-bold">
+              Total tx. cost
+            </v-col>
+            <v-col cols="5" class="text-right font-weight-bold error--text">
+              <samp>{{ toCurrency(getTxCost(menuTargetItem)) }}</samp>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-menu>
+    <v-menu
+      v-model="showPnLMenu"
+      offset-y
+      absolute
+      :position-x="menuX"
+      :position-y="menuY"
+      close-on-content-click
+    >
+      <v-card v-if="menuTargetItem" max-width="18em" min-width="15em">
+        <v-card-text class="info white--text py-2 px-4">
+          <span class="font-weight-bold">{{ menuTargetItem.ticker }}</span> - profits &amp; losses
+        </v-card-text>
+        <v-card-text class="caption pa-2">
+          <v-row no-gutters>
+            <v-col cols="1" />
+            <v-col cols="6">
+              Realized gain
+            </v-col>
+            <v-col cols="5" class="text-right">
+              <samp>{{ toCurrency(menuTargetItem.sumRealizedGain) }}</samp>
+            </v-col>
+            <v-col v-if="menuTargetItem.qtyHold" cols="1" />
+            <v-col v-if="menuTargetItem.qtyHold > 1e-5" cols="6">
+              Unrealized gain
+            </v-col>
+            <v-col v-if="menuTargetItem.qtyHold > 1e-5" cols="5" class="text-right">
+              <samp>{{ toCurrency(menuTargetItem.vClose - menuTargetItem.sumHoldingCost) }}</samp>
+            </v-col>
+            <v-col cols="1">
+              +
+            </v-col>
+            <v-col cols="6">
+              Dividends
+            </v-col>
+            <v-col cols="5" class="text-right">
+              <samp>{{ toCurrency(menuTargetItem.sumDividend) }}</samp>
+            </v-col>
+            <v-col cols="12">
+              <hr>
+            </v-col>
+            <v-col cols="1">
+              =
+            </v-col>
+            <v-col cols="6">
+              Profits
+            </v-col>
+            <v-col cols="5" class="text-right font-weight-bold success--text">
+              <samp>{{ toCurrency(getPNL(menuTargetItem) + getTxCost(menuTargetItem)) }}</samp>
+            </v-col>
+
+            <v-col cols="1">
+              -
+            </v-col>
+            <v-col cols="5">
+              Tx. costs
+            </v-col>
+            <v-col cols="6" class="text-right font-weight-bold error--text">
+              <samp>{{ toCurrency(getTxCost(menuTargetItem)) }}</samp>
+            </v-col>
+            <v-col cols="12">
+              <hr>
+            </v-col>
+            <v-col cols="1">
+              =
+            </v-col>
+            <v-col cols="6" class="font-weight-semibold">
+              Total P/L
+            </v-col>
+            <v-col cols="5" class="text-right font-weight-bold info--text">
+              <samp>{{ toCurrency(getPNL(menuTargetItem)) }}</samp>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-menu>
+
     <v-data-table
       :headers="headers"
       :items="value"
@@ -17,7 +146,7 @@
               <code class="text-lg">{{ item.ticker }}</code>
             </div>
             <span class="secondary--text text-xs">
-              <samp class="text--secondary">x {{ ( item.qtyHold || item.qtyAdded || 0).toLocaleString() }}&nbsp;</samp>shares
+              <samp class="text--secondary pe-1">{{ ( item.qtyHold || item.qtyAdded || 0).toLocaleString() }}</samp>shares
             </span>
             <v-spacer />
             <vue-apex-charts
@@ -32,7 +161,7 @@
           </div>
           <!-- day change -->
           <div v-if="!isClosedStats" class="d-flex justify-space-between align-center pa-1">
-            <span class="text-sm text--secondary">Day Change</span>
+            <span class="caption text--secondary">Day Change</span>
             <div class="text-right">
               <samp
                 :class="`${getTrendColor(getDayChangePercentages(item))}--text pe-2 text-base`"
@@ -42,7 +171,7 @@
           </div>
           <!-- dividends -->
           <div class="d-flex justify-space-between align-center pa-1">
-            <span class="text-sm text--secondary">Taxed dividends</span>
+            <span class="caption text--secondary">Dividends</span>
             <div class="text-right">
               <span v-if="item.sumTaxDividend" class="secondary--text pe-1">
                 <samp class="text-base">{{ toCurrency(-item.sumTaxDividend) }}</samp> Tax </span>
@@ -52,8 +181,8 @@
           </div>
           <!-- avg. revenue/price vs avg. cost -->
           <div class="d-flex justify-space-between align-center pa-1">
-            <span v-if="isClosedStats" class="text-sm text--secondary">Avg. revenue/cost</span>
-            <span v-else class="text-sm text--secondary">Price / avg. cost</span>
+            <span v-if="isClosedStats" class="caption text--secondary">Avg. revn./cost</span>
+            <span v-else class="caption text--secondary">Price/avg. cost</span>
             <div class="text-right">
               <span v-if="isClosedStats" class="pe-2">
                 <samp class="text-base">{{ toCurrency(item.sumRevenue / item.qtyDeced) }}</samp>
@@ -62,90 +191,18 @@
                 <samp class="text-base">{{ toCurrency(item.pClose) }}</samp>
               </span>
               <span>/</span>
-              <samp class="text-base ps-2">{{ toCurrency(-item.sumCost / item.qtyAdded) }}</samp>
+              <samp class="text-base ps-2">{{ toCurrency(item.sumCost / item.qtyAdded) }}</samp>
             </div>
           </div>
           <!-- profits and losses -->
           <div class="d-flex justify-space-between align-center pa-1">
-            <span class="text-sm text--secondary">Total P/L</span>
-            <v-menu open-on-hover left offset-y>
-              <template v-slot:activator="{ on, attrs }">
-                <a v-bind="attrs" class="pa-0 mx-0 text--primary" v-on="on">
-                  <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap ps-1 text-base`">
-                    {{ toUDPercentage(getGainPercentages(item)) }}
-                  </samp>/
-                  <samp class="text-base ps-2">{{ toCurrency(getPNL(item)) }}</samp>
-                </a>
-              </template>
-              <v-card max-width="18em" min-width="15em">
-                <v-card-text class="info white--text py-2 px-4">
-                  <span class="font-weight-bold">{{ item.ticker }}</span> - profits &amp; losses
-                </v-card-text>
-                <v-card-text class="caption pa-2">
-                  <v-row no-gutters>
-                    <v-col cols="1" />
-                    <v-col cols="6">
-                      Realized gain
-                    </v-col>
-                    <v-col cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.sumRealizedGain) }}</samp>
-                    </v-col>
-                    <v-col v-if="item.qtyHold" cols="1" />
-                    <v-col v-if="item.qtyHold > 1e-5" cols="6">
-                      Unrealized gain
-                    </v-col>
-                    <v-col v-if="item.qtyHold > 1e-5" cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.vClose - item.sumHoldingCost) }}</samp>
-                    </v-col>
-
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      +
-                    </v-col>
-                    <v-col cols="6">
-                      Dividends
-                    </v-col>
-                    <v-col cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.sumDividend) }}</samp>
-                    </v-col>
-                    <v-col cols="12">
-                      <hr>
-                    </v-col>
-
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      =
-                    </v-col>
-                    <v-col cols="6" class="font-weight-semibold">
-                      Profits
-                    </v-col>
-                    <v-col cols="5" class="text-right font-weight-bold success--text">
-                      <samp>{{ toCurrency(getPNL(item) + getTxCost(item)) }}</samp>
-                    </v-col>
-
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      -
-                    </v-col>
-                    <v-col cols="5" class="font-weight-semibold">
-                      Tx. costs
-                    </v-col>
-                    <v-col cols="6" class="text-right font-weight-bold error--text">
-                      <samp>{{ toCurrency(getTxCost(item)) }}</samp>
-                    </v-col>
-                    <v-col cols="12">
-                      <hr>
-                    </v-col>
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      =
-                    </v-col>
-                    <v-col cols="6" class="font-weight-semibold">
-                      Total P/L
-                    </v-col>
-                    <v-col cols="5" class="text-right font-weight-bold info--text">
-                      <samp>{{ toCurrency(getPNL(item)) }}</samp>
-                    </v-col>
-                  </v-row>
-                </v-card-text>
-              </v-card>
-            </v-menu>
+            <span class="caption text--secondary">Total P/L</span>
+            <a class="pa-0 mx-0 text--primary" @click="popPnLMenu($event, item)">
+              <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap ps-1 text-base`">
+                {{ toUDPercentage(getGainPercentages(item)) }}
+              </samp>/
+              <samp class="text-base ps-1">{{ toCurrency(getPNL(item)) }}</samp>
+            </a>
           </div>
         </div>
         <v-divider />
@@ -157,9 +214,9 @@
         #[`item.${header.value}`]="{ item }"
       >
         <div :key="header.value" style="height: 20px">
-          <div v-if="header.value === 'ticker'" class="text-base">
+          <span v-if="header.value === 'ticker'" class="text-base">
             <code>&nbsp;{{ item.ticker }}&nbsp;</code>
-          </div>
+          </span>
           <div v-else-if="header.value === 'dayChange'" class="text-no-wrap">
             <samp class="text--primary">
               {{ toCurrency(getDayChange(item)) }}
@@ -181,140 +238,19 @@
             @updated="handleChartRedraw(item)"
           />
           <div v-else-if="header.value === 'PNL'">
-            <v-menu open-on-hover left offset-y>
-              <template v-slot:activator="{ on, attrs }">
-                <a v-bind="attrs" class="pa-0 mx-0 text--primary" v-on="on">
-                  <samp>{{ toCurrency(getPNL(item)) }}</samp>
-                </a>
-              </template>
-              <v-card max-width="18em" min-width="15em">
-                <v-card-text class="info white--text py-2 px-4">
-                  <span class="font-weight-bold">{{ item.ticker }}</span> - profits &amp; losses
-                </v-card-text>
-                <v-card-text class="caption pa-2">
-                  <v-row no-gutters>
-                    <v-col cols="1" />
-                    <v-col cols="6">
-                      Realized gain
-                    </v-col>
-                    <v-col cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.sumRealizedGain) }}</samp>
-                    </v-col>
-
-                    <v-col v-if="item.qtyHold" cols="1" />
-                    <v-col v-if="item.qtyHold > 1e-5" cols="6">
-                      Unrealized gain
-                    </v-col>
-                    <v-col v-if="item.qtyHold > 1e-5" cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.vClose - item.sumHoldingCost) }}</samp>
-                    </v-col>
-
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      +
-                    </v-col>
-                    <v-col cols="6">
-                      Dividends
-                    </v-col>
-                    <v-col cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.sumDividend) }}</samp>
-                    </v-col>
-                    <v-col cols="12">
-                      <hr>
-                    </v-col>
-
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      =
-                    </v-col>
-                    <v-col cols="6" class="font-weight-semibold">
-                      Profits
-                    </v-col>
-                    <v-col cols="5" class="text-right font-weight-bold success--text">
-                      <samp>{{ toCurrency(getPNL(item) + getTxCost(item)) }}</samp>
-                    </v-col>
-
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      -
-                    </v-col>
-                    <v-col cols="5" class="font-weight-semibold">
-                      Tx. costs
-                    </v-col>
-                    <v-col cols="6" class="text-right font-weight-bold error--text">
-                      <samp>{{ toCurrency(getTxCost(item)) }}</samp>
-                    </v-col>
-                    <v-col cols="12">
-                      <hr>
-                    </v-col>
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      =
-                    </v-col>
-                    <v-col cols="6" class="font-weight-semibold">
-                      Total P/L
-                    </v-col>
-                    <v-col cols="5" class="text-right font-weight-bold info--text">
-                      <samp>{{ toCurrency(getPNL(item)) }}</samp>
-                    </v-col>
-                  </v-row>
-                </v-card-text>
-              </v-card>
-            </v-menu>
+            <a class="pa-0 mx-0 text--primary" @click="popPnLMenu($event, item)">
+              <samp>{{ toCurrency(getPNL(item)) }}</samp>
+            </a>
           </div>
           <div v-else-if="header.value === 'PNL%'">
-            <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap`">
+            <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap`" @click="popPnLMenu($event, item)">
               {{ toUDPercentage(getGainPercentages(item)) }}
             </samp>
           </div>
           <div v-else-if="header.value === 'txCost'">
-            <v-menu open-on-hover left offset-y>
-              <template v-slot:activator="{ on, attrs }">
-                <a v-bind="attrs" class="pa-0 mx-0 text--primary" v-on="on">
-                  <samp>{{ toCurrency(getTxCost(item)) }}</samp>
-                </a>
-              </template>
-              <v-card max-width="15em" min-width="12em">
-                <v-card-text class="white--text error py-2 px-4">
-                  <span class="font-weight-bold">{{ item.ticker }}</span> - transaction cost
-                </v-card-text>
-                <v-card-text class="caption pa-2">
-                  <v-row no-gutters>
-                    <v-col cols="1" />
-                    <v-col cols="6">
-                      Capital gain tax
-                    </v-col>
-                    <v-col cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.sumTaxCgain) }}</samp>
-                    </v-col>
-                    <v-col cols="1" />
-                    <v-col cols="6">
-                      Dividend tax
-                    </v-col>
-                    <v-col cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.sumTaxDividend) }}</samp>
-                    </v-col>
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      +
-                    </v-col>
-                    <v-col cols="6">
-                      Tx. fee
-                    </v-col>
-                    <v-col cols="5" class="text-right">
-                      <samp>{{ toCurrency(item.sumTxFee) }}</samp>
-                    </v-col>
-                    <v-col cols="12">
-                      <hr>
-                    </v-col>
-                    <v-col cols="1" class="font-weight-bold text-center">
-                      =
-                    </v-col>
-                    <v-col cols="6" class="font-weight-semibold">
-                      Total tx. cost
-                    </v-col>
-                    <v-col cols="5" class="text-right font-weight-bold error--text">
-                      <samp>{{ toCurrency(getTxCost(item)) }}</samp>
-                    </v-col>
-                  </v-row>
-                </v-card-text>
-              </v-card>
-            </v-menu>
+            <a class="pa-0 mx-0 text--primary" @click="popTxCostMenu($event, item)">
+              <samp>{{ toCurrency(getTxCost(item)) }}</samp>
+            </a>
           </div>
           <div v-else-if="header.value === 'closedAvgRevenue'">
             <samp class="text-right">
@@ -382,6 +318,11 @@ export default {
     icons: {
       mdiInformationOutline,
     },
+    menuTargetItem: null,
+    showTxCostMenu: false,
+    showPnLMenu: false,
+    menuX: 0,
+    menuY: 0,
   }),
   computed: {
     headers() {
@@ -452,6 +393,20 @@ export default {
     },
   },
   methods: {
+    popPnLMenu($event, item) {
+      this.showTxCostMenu = false;
+      this.showPnLMenu = true;
+      this.menuX = $event.clientX;
+      this.menuY = $event.clientY;
+      this.menuTargetItem = item;
+    },
+    popTxCostMenu($event, item) {
+      this.showPnLMenu = false;
+      this.showTxCostMenu = true;
+      this.menuX = $event.clientX;
+      this.menuY = $event.clientY;
+      this.menuTargetItem = item;
+    },
     getBasePrice(item) {
       const penultimatePositions = this.penultimateMarketDayData?.positions;
       if (Array.isArray(penultimatePositions)) {
@@ -577,8 +532,8 @@ export default {
 
       // baseline
       const baseLine = [
-        { x: dataPoints[0].x, y: this.getBasePrice(item) },
-        { x: dataPoints[dataPoints.length - 1].x, y: this.getBasePrice(item) },
+        { x: dataPoints[0]?.x || new Date().getTime(), y: this.getBasePrice(item) },
+        { x: dataPoints[dataPoints.length - 1]?.x || new Date().getTime(), y: this.getBasePrice(item) },
       ];
 
       chartSeries.push({

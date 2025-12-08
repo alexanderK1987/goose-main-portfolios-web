@@ -54,6 +54,10 @@ export default {
       type: Array,
       default: () => ([]),
     },
+    periodStatistics: {
+      type: Array,
+      default: () => ([]),
+    },
   },
 
   data() {
@@ -73,6 +77,7 @@ export default {
         return this.timeSeriesPeriods[this.value] || '1m';
       },
       set(val) {
+        this.$emit('input', this.timeSeriesPeriods[val]);
         this.$emit('change', this.timeSeriesPeriods[val]);
       },
     },

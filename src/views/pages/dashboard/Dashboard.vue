@@ -13,9 +13,10 @@
       />
     </v-col>
     <v-col cols="12" md="4" class="d-flex flex-column">
-      <dashboard-goal-to-one-million
-        v-if="lastMarketDayData"
-        v-model="lastMarketDayData.vClose"
+      <dashboard-goal
+        v-if="lastMarketDayData && portfolio"
+        :value="lastMarketDayData.vClose"
+        :goal="portfolio.goal || 1e6"
         class="flex-grow-1 fill-height"
       />
     </v-col>
@@ -24,6 +25,7 @@
       <dashboard-time-series
         v-model="portfolioTSeriesPeriod"
         :time-series="visibleTSeries"
+        :period-statistics="portfolioPeriodStatistics"
         class="flex-grow-1 fill-height"
         @change="changeTSeriesPeriods($event)"
       />
@@ -85,7 +87,7 @@ import { snakeToCamel } from '@/utils/snakeCamelTools';
 import siteConfig from '@/../.siteConfig';
 
 // demos
-import DashboardGoalToOneMillion from './DashboardGoalToOneMillion.vue';
+import DashboardGoal from './DashboardGoal.vue';
 import DashboardPickerAndStats from './DashboardPickerAndStats.vue';
 import DashboardCardCompositions from './DashboardCardCompositions.vue';
 import DashboardTimeSeries from './DashboardTimeSeries.vue';
@@ -93,7 +95,7 @@ import DashboardTickerStats from './DashboardTickerStats.vue';
 
 export default {
   components: {
-    DashboardGoalToOneMillion,
+    DashboardGoal,
     DashboardPickerAndStats,
     DashboardCardCompositions,
     DashboardTimeSeries,
@@ -109,6 +111,7 @@ export default {
     portfolioTSeriesMaps: {},
     visibleTSeries: [],
     portfolioTickerStats: [],
+    portfolioPeriodStatistics: [],
     showHoldings: true,
     showClosedPositions: true,
     icons: {
@@ -256,9 +259,8 @@ export default {
       }
     },
     async changeTSeriesPeriods(seriesMode) {
-      this.portfolioTSeriesPeriod = seriesMode;
-      if (Array.isArray(this.portfolioTSeriesMaps[this.portfolioTSeriesPeriod])) {
-        this.visibleTSeries = this.portfolioTSeriesMaps[this.portfolioTSeriesPeriod];
+      if (Array.isArray(this.portfolioTSeriesMaps[seriesMode])) {
+        this.visibleTSeries = this.portfolioTSeriesMaps[seriesMode];
       }
       this.getMyPortfolioTSeries();
     },
@@ -277,6 +279,18 @@ export default {
           }
         }
         this.portfolioTickerStats = portfolioTickerStats;
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    async getMyPortfolioPeriodStatistics() {
+      if (!this.portfolio) {
+        return;
+      }
+      try {
+        const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.portfolioPeriodStatistics(this.portfolio._id)}`;
+        const response = await this.$api.get(REQ_URL);
+        this.portfolioPeriodStatistics = snakeToCamel(response.data) || {};
       } catch (err) {
         console.error(err);
       }

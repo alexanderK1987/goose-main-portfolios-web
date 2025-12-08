@@ -14,7 +14,7 @@
             style="width: 1.2em !important; height: 1.2em !important;"
             @click="isDrawerOpen = !isDrawerOpen"
           >
-            <v-icon>{{ isDrawerOpen ? icons.mdiMenuOpen : icons.mdiMenu }}</v-icon>
+            <v-icon>{{ isDrawerOpen ? icons.mdiMenuOpen : icons.mdiMenuClose }}</v-icon>
           </v-app-bar-nav-icon>
           <code :class="['me-2', isMarketOpen?'warning--text':'', 'text-xs']">
             <v-icon
@@ -73,7 +73,7 @@ import {
   mdiWeatherNight,
   mdiWhiteBalanceSunny,
   mdiKnife,
-  mdiMenu,
+  mdiMenuClose,
   mdiMenuOpen,
 } from '@mdi/js';
 import { snakeToCamel } from '@/utils/snakeCamelTools';
@@ -101,7 +101,7 @@ export default {
         mdiWeatherNight,
         mdiWhiteBalanceSunny,
         mdiKnife,
-        mdiMenu,
+        mdiMenuClose,
         mdiMenuOpen,
       },
     };

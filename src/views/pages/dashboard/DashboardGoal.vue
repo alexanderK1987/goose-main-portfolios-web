@@ -1,7 +1,8 @@
 <template>
   <v-card>
     <v-card-title class="align-start">
-      Road to One Million
+      Road
+      <span v-if="goal">&nbsp;to {{ toAbbreviatedCurrency(goal) }}</span>
     </v-card-title>
     <v-row no-gutters>
       <v-col cols="8">
@@ -9,7 +10,7 @@
           My progress
           <v-progress-linear height="8" :value="value / 1e4 " color="primary" class="my-2" />
           <div class="font-weight-bold text-4xl pt-1">
-            {{ toPercentage(value / 1e6, false) }}
+            {{ toPercentage(value / goal, false) }}
           </div>
         </v-card-text>
       </v-col>
@@ -37,7 +38,7 @@
 
 <script>
 
-import { toPercentage } from '@/utils/numberTools';
+import { toPercentage, toAbbreviatedCurrency } from '@/utils/numberTools';
 
 export default {
   props: {
@@ -46,9 +47,14 @@ export default {
       required: true,
       default: 0,
     },
+    goal: {
+      type: Number,
+      default: 1e6,
+    },
   },
   data: () => ({
     toPercentage,
+    toAbbreviatedCurrency,
   }),
 };
 </script>
