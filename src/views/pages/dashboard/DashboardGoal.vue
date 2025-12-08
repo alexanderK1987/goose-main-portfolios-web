@@ -2,7 +2,7 @@
   <v-card>
     <v-card-title class="align-start">
       Road
-      <span v-if="goal">&nbsp;to {{ toAbbreviatedCurrency(goal) }}</span>
+      <span v-if="goal">&nbsp;to {{ toAbbreviatedCurrency(goal, 0) }}</span>
     </v-card-title>
     <v-row no-gutters>
       <v-col cols="8">

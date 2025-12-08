@@ -26,13 +26,13 @@
             </v-icon>
             NYSE
           </code>
-          <samp class="text-xs">{{ nyseTimeStr }}</samp>
-          <span v-if="$vuetify.breakpoint.mdAndUp">
+          <samp :class="['text-xs', isMarketOpen ? 'text--primary':'']">{{ nyseTimeStr }}</samp>
+          <template v-if="$vuetify.breakpoint.mdAndUp">
             <code class="ms-4 me-2 text-xs">
               <v-icon small class="mt-n1">{{ icons.mdiMapMarkerRadius }}</v-icon>
               LOCAL</code>
             <samp class="text-xs">{{ localTimeStr }}</samp>
-          </span>
+          </template>
           <v-spacer />
           <theme-switcher />
           <app-bar-user-menu />

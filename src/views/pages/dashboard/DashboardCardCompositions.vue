@@ -123,4 +123,8 @@ export default {
 span.apexcharts-legend-text {
   padding-left: 0 !important;
 }
+text.apexcharts-datalabel-label {
+  /* Example: Change color of all labels in this group */
+  fill: #ff6347 !important; /* Use 'fill' for SVG text color */
+}
 </style>

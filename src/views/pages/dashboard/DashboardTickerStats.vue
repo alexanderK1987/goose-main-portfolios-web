@@ -396,15 +396,20 @@ export default {
     popPnLMenu($event, item) {
       this.showTxCostMenu = false;
       this.showPnLMenu = true;
-      this.menuX = $event.clientX;
-      this.menuY = $event.clientY;
+      const targetElement = $event.currentTarget;
+      const rect = targetElement.getBoundingClientRect();
+      this.menuX = rect.left;
+      this.menuY = rect.bottom;
       this.menuTargetItem = item;
+      console.log($event);
     },
     popTxCostMenu($event, item) {
       this.showPnLMenu = false;
       this.showTxCostMenu = true;
-      this.menuX = $event.clientX;
-      this.menuY = $event.clientY;
+      const targetElement = $event.currentTarget;
+      const rect = targetElement.getBoundingClientRect();
+      this.menuX = rect.left;
+      this.menuY = rect.bottom;
       this.menuTargetItem = item;
     },
     getBasePrice(item) {

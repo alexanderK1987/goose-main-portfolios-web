@@ -14,9 +14,8 @@
     </v-col>
     <v-col cols="12" md="4" class="d-flex flex-column">
       <dashboard-goal
-        v-if="lastMarketDayData && portfolio"
-        :value="lastMarketDayData.vClose"
-        :goal="portfolio.goal || 1e6"
+        :value="lastMarketDayData && lastMarketDayData.vClose || 0"
+        :goal="portfolio && portfolio.personalGoal || 1e6"
         class="flex-grow-1 fill-height"
       />
     </v-col>
@@ -184,6 +183,7 @@ export default {
       this.portfolioTSeriesMaps = {};
       this.getMyPortfolioTSeries();
       this.getMyPortfolioTickerStats();
+      this.getMyPortfolioPeriodStatistics();
     },
   },
   beforeDestroy() {
@@ -200,12 +200,13 @@ export default {
     this.loading = false;
     this.detectUrlFragment();
     this.updateUrlFragment();
+    this.getMyPortfolioPeriodStatistics();
   },
   mounted() {
     // 10 minutes refresh
     this.refreshInterval = setInterval(() => {
       this.triggerRefresh();
-    }, 60000 * 10);
+    }, 60e3 * 10);
   },
   methods: {
     pickPortfolioByIndex(pickerIdx) {
@@ -290,7 +291,8 @@ export default {
       try {
         const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.portfolioPeriodStatistics(this.portfolio._id)}`;
         const response = await this.$api.get(REQ_URL);
-        this.portfolioPeriodStatistics = snakeToCamel(response.data) || {};
+        this.portfolioPeriodStatistics = snakeToCamel(response.data) || [];
+        this.portfolioPeriodStatistics = this.portfolioPeriodStatistics.sort((a, b) => b.periodFirstTimestamp.localeCompare(a.periodFirstTimestamp));
       } catch (err) {
         console.error(err);
       }

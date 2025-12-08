@@ -47,9 +47,10 @@ import siteConfig from '@/../.siteConfig';
 import { snakeToCamel, camelToSnake } from '@/utils/snakeCamelTools';
 import PortfolioEditForm from './PortfolioEditForm.vue';
 
-const makePortfolioTab = ({ _id, portfolioName }) => ({
+const makePortfolioTab = ({ _id, portfolioName, personalGoal }) => ({
   _id,
   portfolioName: portfolioName || '',
+  personalGoal: personalGoal || 1e6,
   title: _id ? (portfolioName || '') : 'new',
   icon: _id ? mdiFileDocumentEditOutline : mdiPlusBox,
   portfolioTxs: [],
@@ -129,7 +130,10 @@ export default {
 
       try {
         // Call the API endpoint
-        const requestBody = { portfolioName: $event.portfolioName };
+        const requestBody = {
+          portfolioName: $event.portfolioName,
+          personalGoal: parseFloat($event.personalGoal) || 1e6,
+        };
         const response = await this.$api.patch(REQ_URL, camelToSnake(requestBody));
         const updatedProfile = snakeToCamel(response.data);
         this.snackbarProps.visible = true;
@@ -155,7 +159,10 @@ export default {
 
       try {
         // Call the API endpoint
-        const requestBody = { portfolioName: $event.portfolioName };
+        const requestBody = {
+          portfolioName: $event.portfolioName,
+          personalGoal: parseFloat($event.personalGoal) || 1e6,
+        };
         const response = await this.$api.post(REQ_URL, camelToSnake(requestBody));
         const newProfile = snakeToCamel(response.data);
         this.snackbarProps.visible = true;

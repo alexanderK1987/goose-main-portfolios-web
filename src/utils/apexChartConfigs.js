@@ -54,6 +54,7 @@ export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocati
   legend: {
     position: chartLabelLocations || 'right',
     horizontalAlign: 'center',
+    fontSize: '10px', // Your desired font size
   },
   tooltip: { enabled: false },
   plotOptions: {
@@ -61,7 +62,12 @@ export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocati
       donut: {
         labels: {
           show: true,
+          name: {
+            show: true,
+            fontSize: '10px',
+          },
           value: {
+            show: true,
             formatter(w) {
               const value = parseFloat(w);
               const valueDigits = Math.floor(Math.log10(Math.abs(value)));
@@ -92,6 +98,11 @@ export const dashboardCandlesticksOptions = {
     type: 'candlestick',
     toolbar: { show: false },
     offsetX: -15,
+    zoom: {
+      enabled: true,
+      autoScaleYaxis: true,
+      allowMouseWheelZoom: false,
+    },
   },
 
   // 2. Update plotOptions for candlestick
