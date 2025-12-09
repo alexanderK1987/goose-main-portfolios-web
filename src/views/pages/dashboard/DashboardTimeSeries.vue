@@ -5,7 +5,7 @@
         <v-col cols="12" class="d-flex align-center flex-wrap justify-space-between">
           <span class="text-no-wrap">Portfolio Net Values</span>
           <v-spacer />
-          <v-menu offset-y>
+          <v-menu offset-y style="z-index: 30;">
             <template v-slot:activator="{ on, attrs }">
               <v-chip dense outlined class="my-n2" v-bind="attrs" v-on="on">
                 <v-icon small class="me-1">
@@ -14,7 +14,7 @@
                 Stats
               </v-chip>
             </template>
-            <v-card min-width="320" class="py-1">
+            <v-card class="py-1">
               <v-card-text class="white--text primary px-4 py-3">
                 <span class="font-weight-bold">Portfolio Perfomance</span>
               </v-card-text>
@@ -65,10 +65,10 @@
           <v-chip-group
             v-model="selectedPeriod"
             :class="[
-              'pa-0 my-n2',
-              $vuetify.breakpoint.smAndDown ? 'pt-5 flex-grow-1':''
+              'pa-0 my-n1',
+              $vuetify.breakpoint.smAndDown ? 'pt-2 flex-grow-1':''
             ]"
-            style="z-index: 200;"
+            style="z-index: 2;"
           >
             <v-spacer v-if="$vuetify.breakpoint.smAndDown" />
             <v-chip
@@ -90,7 +90,7 @@
         :options="candlesticksChartOptions"
         :series="chartData"
         :height="$vuetify.breakpoint.smAndDown ? 200:300"
-        :class="[$vuetify.breakpoint.smAndDown ? 'mr-n5 ml-n1 my-n4':'']"
+        :class="[$vuetify.breakpoint.smAndDown ? 'mr-n4 ml-n1 my-n4':'']"
         style="z-index: 1;"
         @mousewheel.stop=""
       />

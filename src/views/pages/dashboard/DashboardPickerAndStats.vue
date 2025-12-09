@@ -5,14 +5,15 @@
         {{ portfolio && portfolio.portfolioName }}
       </span>
       <v-spacer />
-      <v-btn :disabled="loading" icon small class="my-n1 me-2" @click="$emit('trigger-refresh')">
+      <v-btn :disabled="loading || isCooldownActive" text small class="pe-2" @click="refreshData()">
         <v-icon small>
           {{ icons.mdiRefresh }}
         </v-icon>
+        <samp class="ps-1">{{ timeRemaining ? formatSecondsToTime(timeRemaining ) : 'refresh' }}</samp>
       </v-btn>
-      <v-menu v-model="pickerVisible" open-on-hover offset-y left min-width="280">
+      <v-menu v-model="pickerVisible" offset-y left min-width="280">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn icon small class="my-n1" v-bind="attrs" v-on="on">
+          <v-btn icon small v-bind="attrs" v-on="on">
             <v-icon>
               {{ pickerVisible? icons.mdiChevronUp :icons.mdiChevronDown }}
             </v-icon>
@@ -116,7 +117,7 @@ import {
   mdiRefresh,
 } from '@mdi/js';
 import {
-  toCurrency, toPercentage, toLocaleDateString, toAgeString, getTrendColor,
+  toCurrency, toPercentage, toLocaleDateString, toAgeString, getTrendColor, formatSecondsToTime,
 } from '@/utils/numberTools';
 
 export default {
@@ -150,11 +151,14 @@ export default {
   data: () => ({
     toCurrency,
     toLocaleDateString,
+    formatSecondsToTime,
     toPercentage,
     toAgeString,
     getTrendColor,
     pickerVisible: false,
     portfolioItemIdxSelected: 0,
+    isCooldownActive: false,
+    timeRemaining: 0,
     icons: {
       mdiTrendingUp,
       mdiTrendingDown,
@@ -232,6 +236,33 @@ export default {
           ? this.icons.mdiTrendingDown
           : this.icons.mdiTrendingNeutral;
     },
+    refreshData() {
+      this.$emit('trigger-refresh');
+      this.startCooldown();
+    },
+
+    startCooldown() {
+      this.isCooldownActive = true;
+      this.timeRemaining = 60;
+      this.countdownInterval = setInterval(() => {
+        this.timeRemaining -= 1;
+
+        if (this.timeRemaining <= 0) {
+          this.endCooldown();
+        }
+      }, 1000);
+    },
+    endCooldown() {
+      clearInterval(this.countdownInterval);
+      this.isCooldownActive = false;
+      this.timeRemaining = 0;
+      console.log('Cooldown ended. Button is ready to be clicked again.');
+    },
+  },
+
+  // Best practice: clear the interval when the component is destroyed
+  beforeUnmount() {
+    clearInterval(this.countdownInterval);
   },
 };
 </script>

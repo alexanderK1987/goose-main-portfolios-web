@@ -10,7 +10,16 @@ export function toCurrency(number, digits) {
     maximumFractionDigits: digits,
   });
 }
+export function formatSecondsToTime(totalSeconds) {
+  if (typeof totalSeconds !== 'number' || totalSeconds < 0) {
+    return '00:00';
+  }
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  const pad = num => String(num).padStart(2, '0');
 
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
 export function toAbbreviatedCurrency(number, digits = 2) {
   if (Number.isNaN(parseFloat(number)) || number === null || number === undefined) {
     number = 0;

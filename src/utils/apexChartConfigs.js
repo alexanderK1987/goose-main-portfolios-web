@@ -62,10 +62,7 @@ export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocati
       donut: {
         labels: {
           show: true,
-          name: {
-            show: true,
-            fontSize: '10px',
-          },
+          name: { show: true },
           value: {
             show: true,
             formatter(w) {

@@ -1,6 +1,6 @@
 <template>
   <v-card ref="chartContainer">
-    <v-card-title class="d-flex justify-space-between align-start pb-0">
+    <v-card-title class="d-flex justify-space-between align-start">
       <span>Compositions</span>
       <v-spacer />
       <v-chip-group class="pa-0 my-n2" @change="groupMinors = !groupMinors">
@@ -12,12 +12,12 @@
         </v-chip>
       </v-chip-group>
     </v-card-title>
-    <v-card-text class="pt-1 pb-0 my-0 ">
+    <v-card-text>
       <vue-apex-charts
         v-if="Array.isArray(chartData) && chartOptions"
         :options="chartOptions"
         :series="chartData"
-        height="300"
+        height="270"
         @updated="handleChartRedraw"
       />
     </v-card-text>
@@ -119,12 +119,18 @@ export default {
   },
 };
 </script>
-<style>
-span.apexcharts-legend-text {
-  padding-left: 0 !important;
+<style scoped>
+::v-deep .apexcharts-legend-text {
+  margin-left: 0rem !important;
+  padding-left: 0.25rem;
+  font-size: 0.2rem !important;
 }
-text.apexcharts-datalabel-label {
-  /* Example: Change color of all labels in this group */
-  fill: #ff6347 !important; /* Use 'fill' for SVG text color */
+::v-deep .apexcharts-canvas .apexcharts-pie .apexcharts-datalabel-label {
+  font-size: 1.2rem !important;
+  transform: translateY(0rem) !important;
+}
+::v-deep .apexcharts-canvas .apexcharts-pie .apexcharts-datalabel-value {
+  font-size: 1.1rem !important;
+  transform: translateY(-0.6rem) !important;
 }
 </style>

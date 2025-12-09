@@ -149,7 +149,7 @@
               <span>
                 <samp class="text--secondary pe-1">{{ ( item.qtyHold || item.qtyAdded || 0).toLocaleString() }}</samp>shares
               </span>
-              <span>
+              <span v-if="item.qtyHold > 1e-5">
                 <samp class="text--secondary">{{ toPercentage(getHoldingPositionPortions(item), false) }}</samp>
               </span>
             </span>
@@ -201,11 +201,8 @@
           </div>
           <!-- dividends -->
           <div class="d-flex justify-space-between align-center pa-1">
-            <span class="caption text--secondary">Dividends</span>
+            <span class="caption text--secondary">Post-tax dividends</span>
             <div class="text-right">
-              <span v-if="item.sumTaxDividend" class="secondary--text pe-1 caption">
-                tax: <samp>{{ toCurrency(item.sumTaxDividend) }}</samp></span>
-              <span v-if="item.sumTaxDividend" />/
               <samp class="text-base ps-1">{{ toCurrency(item.sumDividend) }}</samp>
             </div>
           </div>
@@ -410,7 +407,6 @@ export default {
       this.menuX = rect.left;
       this.menuY = rect.bottom;
       this.menuTargetItem = item;
-      console.log($event);
     },
     popTxCostMenu($event, item) {
       this.showPnLMenu = false;
