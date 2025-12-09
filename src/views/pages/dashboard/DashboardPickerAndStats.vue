@@ -257,7 +257,6 @@ export default {
       clearInterval(this.countdownInterval);
       this.isCooldownActive = false;
       this.timeRemaining = 0;
-      console.log('Cooldown ended. Button is ready to be clicked again.');
     },
   },
 
