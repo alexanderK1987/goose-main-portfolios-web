@@ -68,6 +68,7 @@
               'pa-0 my-n2',
               $vuetify.breakpoint.smAndDown ? 'pt-5 flex-grow-1':''
             ]"
+            style="z-index: 200;"
           >
             <v-spacer v-if="$vuetify.breakpoint.smAndDown" />
             <v-chip
@@ -90,6 +91,7 @@
         :series="chartData"
         :height="$vuetify.breakpoint.smAndDown ? 200:300"
         :class="[$vuetify.breakpoint.smAndDown ? 'mr-n5 ml-n1 my-n4':'']"
+        style="z-index: 1;"
         @mousewheel.stop=""
       />
     </v-card-text>

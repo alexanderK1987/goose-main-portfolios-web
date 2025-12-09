@@ -99,22 +99,18 @@ export const dashboardCandlesticksOptions = {
     toolbar: { show: false },
     offsetX: -15,
     zoom: {
-      enabled: true,
+      enabled: false,
       autoScaleYaxis: true,
       allowMouseWheelZoom: false,
     },
   },
 
-  // 2. Update plotOptions for candlestick
   plotOptions: {
     candlestick: {
-      // You can customize colors for rising/falling candles here
       colors: {
-        up: apexUpColor, // Green for rising (Close > Open)
-        down: apexUpColor, // Red for falling (Close < Open)
+        upward: apexUpColorStrong,
+        downward: apexDownColorStrong,
       },
-
-      // Remove bar-specific options like columnWidth, distributed, borderRadius
     },
   },
 

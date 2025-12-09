@@ -142,11 +142,16 @@
         <div class="pa-2">
           <!-- ticker -->
           <div class="d-flex justify-space-between align-center py-1">
-            <div style="width: 4.5em; white-space:nowrap;">
+            <div class="text-no-wrap me-2">
               <code class="text-lg">{{ item.ticker }}</code>
             </div>
-            <span class="secondary--text text-xs">
-              <samp class="text--secondary pe-1">{{ ( item.qtyHold || item.qtyAdded || 0).toLocaleString() }}</samp>shares
+            <span class="secondary--text text-xs d-flex flex-column">
+              <span>
+                <samp class="text--secondary pe-1">{{ ( item.qtyHold || item.qtyAdded || 0).toLocaleString() }}</samp>shares
+              </span>
+              <span>
+                <samp class="text--secondary">{{ toPercentage(getHoldingPositionPortions(item), false) }}</samp>
+              </span>
             </span>
             <v-spacer />
             <vue-apex-charts
@@ -166,18 +171,18 @@
               <samp
                 :class="`${getTrendColor(getDayChangePercentages(item))}--text pe-2 text-base`"
               >{{ toUDPercentage(getDayChangePercentages(item)) }}</samp>/
-              <samp class="text-base ps-2">{{ toCurrency(getDayChange(item)) }}</samp>
+              <samp class="text-base ps-1">{{ toCurrency(getDayChange(item)) }}</samp>
             </div>
           </div>
-          <!-- dividends -->
+          <!-- profits and losses -->
           <div class="d-flex justify-space-between align-center pa-1">
-            <span class="caption text--secondary">Dividends</span>
-            <div class="text-right">
-              <span v-if="item.sumTaxDividend" class="secondary--text pe-1">
-                <samp class="text-base">{{ toCurrency(-item.sumTaxDividend) }}</samp> Tax </span>
-              <span v-if="item.sumTaxDividend">/</span>
-              <samp class="text-base ps-2">{{ toCurrency(item.sumDividend) }}</samp>
-            </div>
+            <span class="caption text--secondary">Total P/L</span>
+            <a class="pa-0 mx-0 text--primary" @click="popPnLMenu($event, item)">
+              <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap ps-1 text-base`">
+                {{ toUDPercentage(getGainPercentages(item)) }}
+              </samp>/
+              <samp class="text-base ps-1">{{ toCurrency(getPNL(item)) }}</samp>
+            </a>
           </div>
           <!-- avg. revenue/price vs avg. cost -->
           <div class="d-flex justify-space-between align-center pa-1">
@@ -194,15 +199,15 @@
               <samp class="text-base ps-2">{{ toCurrency(item.sumCost / item.qtyAdded) }}</samp>
             </div>
           </div>
-          <!-- profits and losses -->
+          <!-- dividends -->
           <div class="d-flex justify-space-between align-center pa-1">
-            <span class="caption text--secondary">Total P/L</span>
-            <a class="pa-0 mx-0 text--primary" @click="popPnLMenu($event, item)">
-              <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap ps-1 text-base`">
-                {{ toUDPercentage(getGainPercentages(item)) }}
-              </samp>/
-              <samp class="text-base ps-1">{{ toCurrency(getPNL(item)) }}</samp>
-            </a>
+            <span class="caption text--secondary">Dividends</span>
+            <div class="text-right">
+              <span v-if="item.sumTaxDividend" class="secondary--text pe-1 caption">
+                tax: <samp>{{ toCurrency(item.sumTaxDividend) }}</samp></span>
+              <span v-if="item.sumTaxDividend" />/
+              <samp class="text-base ps-1">{{ toCurrency(item.sumDividend) }}</samp>
+            </div>
           </div>
         </div>
         <v-divider />
@@ -275,7 +280,7 @@
 </template>
 
 <script>
-import { mdiInformationOutline } from '@mdi/js';
+import { mdiInformationOutline, mdiChartPie } from '@mdi/js';
 import VueApexCharts from 'vue-apexcharts';
 import {
   toCurrency, toPercentage, getTrendColor, toUDPercentage,
@@ -316,6 +321,7 @@ export default {
     toUDPercentage,
     getTrendColor,
     icons: {
+      mdiChartPie,
       mdiInformationOutline,
     },
     menuTargetItem: null,
@@ -393,6 +399,9 @@ export default {
     },
   },
   methods: {
+    getHoldingPositionPortions(item) {
+      return item.vClose / this.lastMarketDayData.vClose;
+    },
     popPnLMenu($event, item) {
       this.showTxCostMenu = false;
       this.showPnLMenu = true;
@@ -463,10 +472,10 @@ export default {
     },
     getGainPercentages(item) {
       if (item.vClose > 1e-5) {
-        return (item.vClose - item.sumTaxCgain - item.sumTaxDividend) / (item.sumHoldingCost + item.sumTxFee) - 1.0;
+        return (item.vClose - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumHoldingCost) - 1.0;
       }
 
-      return (item.sumRevenue - item.sumTaxCgain - item.sumTaxDividend) / (item.sumCost + item.sumTxFee) - 1.0;
+      return (item.sumRevenue - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumCost) - 1.0;
     },
     customSort(items, sortBy, sortDesc) {
       const isDescending = sortDesc[0];

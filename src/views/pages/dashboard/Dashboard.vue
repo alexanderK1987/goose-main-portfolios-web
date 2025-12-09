@@ -72,7 +72,11 @@
             :last-market-day-data="{}"
             :penultimate-market-day-data="{}"
           />
-          <v-divider v-else />
+          <div v-else class="d-flex align-center pt-2" @click="showClosedPositions = !showClosedPositions">
+            <v-divider />
+            <span class="mx-2 caption">{{ closedPositionStats.length }} hidden</span>
+            <v-divider />
+          </div>
         </v-card-text>
       </v-card>
     </v-col>
@@ -177,6 +181,12 @@ export default {
     },
   },
   watch: {
+    showClosedPositions(value) {
+      localStorage.setItem(
+        'dashboard.showClosedPositions',
+        Number(value) || 0,
+      );
+    },
     portfolioIdx() {
       this.updateUrlFragment();
       this.getportfolioLastMarketDays();
@@ -192,15 +202,17 @@ export default {
     }
   },
   async created() {
+    this.showClosedPositions = localStorage.getItem('dashboard.showClosedPositions') === '1';
     this.loading = true;
     await this.getMyPortfolios();
     this.getportfolioLastMarketDays();
     this.getMyPortfolioTSeries();
     this.getMyPortfolioTickerStats();
+    this.getMyPortfolioPeriodStatistics();
+
     this.loading = false;
     this.detectUrlFragment();
     this.updateUrlFragment();
-    this.getMyPortfolioPeriodStatistics();
   },
   mounted() {
     // 10 minutes refresh
@@ -318,6 +330,7 @@ export default {
         await this.getportfolioLastMarketDays();
         await this.getMyPortfolioTSeries();
         await this.getMyPortfolioTickerStats();
+        await this.getMyPortfolioPeriodStatistics();
       } catch (e) {
         console.log(e);
       } finally {

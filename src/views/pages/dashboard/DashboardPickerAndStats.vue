@@ -46,13 +46,13 @@
       </v-menu>
     </v-card-title>
     <v-card-subtitle class="d-flex flex-wrap justify-start align-center pt-1">
-      <span class="caption me-4 pb-2">
+      <span class="caption me-3 pb-2">
         Market day
         <v-chip v-if="lastMarketDayData" dense small class="my-n3 py-0">
           {{ toLocaleDateString(lastMarketDayData.timestamp) }}
         </v-chip>
       </span>
-      <span class="caption me-4 pb-2">
+      <span class="caption me-3 pb-2">
         First tx.
         <v-chip v-if="portfolio" outlineddense small class="my-n3 py-0">
           {{ toLocaleDateString(portfolio && portfolio.firstTxTimestamp || '') }}
