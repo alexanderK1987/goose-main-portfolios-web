@@ -159,6 +159,7 @@ export default {
     portfolioItemIdxSelected: 0,
     isCooldownActive: false,
     timeRemaining: 0,
+    countdownInterval: null,
     icons: {
       mdiTrendingUp,
       mdiTrendingDown,
@@ -262,7 +263,7 @@ export default {
 
   // Best practice: clear the interval when the component is destroyed
   beforeUnmount() {
-    clearInterval(this.countdownInterval);
+    if (this.countdownInterval) { clearInterval(this.countdownInterval); }
   },
 };
 </script>
