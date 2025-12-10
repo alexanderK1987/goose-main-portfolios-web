@@ -45,13 +45,13 @@
                         </v-chip>
                       </v-col>
                       <v-col cols="5" class="text-no-wrap text-right">
-                        <samp class="pe-1">{{ toCurrency(entry.diffPrincipals) }}</samp>
+                        <samp class="pe-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(entry.diffPrincipals) }}</samp>
                       </v-col>
                       <v-col cols="4" class="d-flex flex-column align-end justify-space-around">
                         <v-spacer />
-                        <samp class="font-weight-semibold text-no-wrap">{{ toCurrency((entry.diffValue - entry.diffPrincipals)) }}</samp>
+                        <samp class="font-weight-semibold text-no-wrap">{{ hidePortfolioValues ? '$###,###.##' : toCurrency((entry.diffValue - entry.diffPrincipals)) }}</samp>
                         <samp :class="`${getTrendColor(getROR(entry))}--text text-no-wrap`">{{
-                          toUDPercentage(getROR(entry))
+                          hidePortfolioValues ? '##.##%' : toUDPercentage(getROR(entry))
                         }}</samp>
                         <v-spacer />
                       </v-col>
@@ -87,6 +87,7 @@
       <!-- Chart -->
       <vue-apex-charts
         v-if="Array.isArray(chartData) && candlesticksChartOptions"
+        :key="chartKey"
         :options="candlesticksChartOptions"
         :series="chartData"
         :height="$vuetify.breakpoint.smAndDown ? 200:300"
@@ -121,6 +122,10 @@ export default {
       type: Array,
       default: () => ([]),
     },
+    hidePortfolioValues: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data() {
@@ -128,7 +133,7 @@ export default {
       toCurrency,
       toUDPercentage,
       getTrendColor,
-      candlesticksChartOptions: dashboardCandlesticksOptions,
+      chartKey: (new Date()).getTime(),
       icons: {
         mdiDotsVertical,
         mdiTrendingUp,
@@ -139,6 +144,9 @@ export default {
   },
 
   computed: {
+    candlesticksChartOptions() {
+      return dashboardCandlesticksOptions(this.hidePortfolioValues);
+    },
     selectedPeriod: {
       get() {
         return this.timeSeriesPeriods[this.value] || '1m';
@@ -167,6 +175,11 @@ export default {
         : [];
 
       return [{ data }];
+    },
+  },
+  watch: {
+    hidePortfolioValues() {
+      this.chartKey = (new Date()).getTime();
     },
   },
   methods: {

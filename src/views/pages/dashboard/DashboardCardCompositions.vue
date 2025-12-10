@@ -15,6 +15,7 @@
     <v-card-text>
       <vue-apex-charts
         v-if="Array.isArray(chartData) && chartOptions"
+        :key="chartKey"
         :options="chartOptions"
         :series="chartData"
         height="270"
@@ -41,10 +42,15 @@ export default {
       required: true,
       default: () => ([]),
     },
+    hidePortfolioValues: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: () => ({
     groupThreshold: 2.5e-2,
     groupMinors: true,
+    chartKey: new Date().getTime(),
     icons: { mdiDotsVertical, mdiMenuUp },
     chartLabelLocations: 'right',
   }),
@@ -99,7 +105,21 @@ export default {
       return this.value.map(p => p.ticker);
     },
     chartOptions() {
-      return dashboardCompositionDoughnutOptions(this.tickerLabels, this.chartLabelLocations);
+      return dashboardCompositionDoughnutOptions(
+        this.hidePortfolioValues ? this.tickerLabels.map(x => 'XXX') : this.tickerLabels,
+        this.chartLabelLocations,
+        this.hidePortfolioValues,
+      );
+    },
+  },
+  watch: {
+    chartOptions: {
+      handler() {
+        console.log(this.chartOptions);
+        this.chartKey = new Date().getTime();
+      },
+      deep: true,
+      immediate: true,
     },
   },
   methods: {

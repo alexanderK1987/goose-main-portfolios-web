@@ -2,7 +2,7 @@
   <v-card>
     <v-card-title class="align-start">
       Road
-      <span v-if="goal">&nbsp;to {{ toAbbreviatedCurrency(goal, 0) }}</span>
+      <span v-if="goal">&nbsp;to {{ hidePortfolioValues ? '$###' : toAbbreviatedCurrency(goal, 0) }}</span>
     </v-card-title>
     <v-row no-gutters>
       <v-col cols="8">
@@ -10,7 +10,7 @@
           My progress
           <v-progress-linear height="8" :value="value / 1e4 " color="primary" class="my-2" />
           <div class="font-weight-bold text-4xl pt-1">
-            {{ toPercentage(value / goal, false) }}
+            {{ hidePortfolioValues ? '##.##' + '%' : toPercentage(value / goal, false) }}
           </div>
         </v-card-text>
       </v-col>
@@ -50,6 +50,10 @@ export default {
     goal: {
       type: Number,
       default: 1e6,
+    },
+    hidePortfolioValues: {
+      type: Boolean,
+      default: false,
     },
   },
   data: () => ({

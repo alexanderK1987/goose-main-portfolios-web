@@ -37,7 +37,11 @@ export const sparklineOptions = trend => ({
 
 });
 
-export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocations) => ({
+export const dashboardCompositionDoughnutOptions = (
+  dataLabels,
+  chartLabelLocations,
+  hidePortfolioValues,
+) => ({
   chart: {
     type: 'donut',
   },
@@ -70,7 +74,7 @@ export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocati
               const valueDigits = Math.floor(Math.log10(Math.abs(value)));
               const nDigits = Math.max(0, Math.min(2, 5 - valueDigits)) || 0;
 
-              return toCurrency(value, nDigits || 0);
+              return hidePortfolioValues ? '$###,###.##' : toCurrency(value, nDigits || 0);
             },
           },
           total: {
@@ -81,7 +85,7 @@ export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocati
               const valueDigits = Math.floor(Math.log10(Math.abs(value)));
               const nDigits = Math.max(0, Math.min(2, 5 - valueDigits)) || 0;
 
-              return toCurrency(value, nDigits);
+              return hidePortfolioValues ? '$###,###.##' : toCurrency(value, nDigits);
             },
           },
         },
@@ -90,7 +94,7 @@ export const dashboardCompositionDoughnutOptions = (dataLabels, chartLabelLocati
   },
 });
 
-export const dashboardCandlesticksOptions = {
+export const dashboardCandlesticksOptions = hidePortfolioValues => ({
   chart: {
     type: 'candlestick',
     toolbar: { show: false },
@@ -121,6 +125,15 @@ export const dashboardCandlesticksOptions = {
     labels: {
       show: true,
       style: { fontSize: '12px' },
+      formatter: x => (
+        hidePortfolioValues
+          ? '####' : (new Date(x))
+            .toLocaleString('POSIX', {
+              month: 'short',
+              day: 'numeric',
+            })
+
+      ),
     },
   },
 
@@ -130,9 +143,9 @@ export const dashboardCandlesticksOptions = {
     axisBorder: { show: true },
     axisTicks: { show: true },
     labels: {
-      showDuplicates: false,
+      showDuplicates: true,
       align: 'left',
-      formatter: x => toAbbreviatedCurrency(x, 0),
+      formatter: x => (hidePortfolioValues ? '$##,###' : toAbbreviatedCurrency(x, 0)),
     },
   },
 
@@ -177,4 +190,4 @@ export const dashboardCandlesticksOptions = {
       );
     },
   },
-};
+});

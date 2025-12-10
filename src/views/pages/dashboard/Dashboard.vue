@@ -2,29 +2,33 @@
   <v-row dense>
     <v-col cols="12" md="8" class="d-flex flex-column">
       <dashboard-picker-and-stats
+        ref="pickerAndStats"
         v-model="portfolioIdx"
         :portfolios="portfolios"
         :last-market-day-data="lastMarketDayData || {}"
         :penultimate-market-day-data="penultimateMarketDayData || {}"
         :loading="loading"
+        :hide-portfolio-values="hidePortfolioValues"
         class="flex-grow-1 fill-height"
         @pick-portfolio="pickPortfolioByIndex($event)"
         @trigger-refresh="triggerRefresh()"
+        @toggleHideValues="hidePortfolioValues = !hidePortfolioValues"
       />
     </v-col>
     <v-col cols="12" md="4" class="d-flex flex-column">
       <dashboard-goal
         :value="lastMarketDayData && lastMarketDayData.vClose || 0"
         :goal="portfolio && portfolio.personalGoal || 1e6"
+        :hide-portfolio-values="hidePortfolioValues"
         class="flex-grow-1 fill-height"
       />
     </v-col>
-
     <v-col cols="12" md="8" class="d-flex flex-column">
       <dashboard-time-series
         v-model="portfolioTSeriesPeriod"
         :time-series="visibleTSeries"
         :period-statistics="portfolioPeriodStatistics"
+        :hide-portfolio-values="hidePortfolioValues"
         class="flex-grow-1 fill-height"
         @change="changeTSeriesPeriods($event)"
       />
@@ -32,6 +36,7 @@
     <v-col cols="12" md="4" class="d-flex flex-column">
       <dashboard-card-compositions
         :value="compositionData"
+        :hide-portfolio-values="hidePortfolioValues"
         class="flex-grow-1 fill-height"
       />
     </v-col>
@@ -52,6 +57,7 @@
             :value="holdingPositionStats"
             :last-market-day-data="lastMarketDayData || {}"
             :penultimate-market-day-data="penultimateMarketDayData || {}"
+            :hide-portfolio-values="hidePortfolioValues"
           />
           <v-divider v-else />
         </v-card-text>
@@ -71,6 +77,7 @@
             :value="closedPositionStats"
             :last-market-day-data="{}"
             :penultimate-market-day-data="{}"
+            :hide-portfolio-values="hidePortfolioValues"
           />
           <div v-else class="d-flex align-center pt-2" @click="showClosedPositions = !showClosedPositions">
             <v-divider />
@@ -117,6 +124,7 @@ export default {
     portfolioPeriodStatistics: [],
     showHoldings: true,
     showClosedPositions: true,
+    hidePortfolioValues: false,
     icons: {
       mdiChevronDown,
       mdiChevronUp,
@@ -183,7 +191,13 @@ export default {
   watch: {
     showClosedPositions(value) {
       localStorage.setItem(
-        'dashboard.showClosedPositions',
+        siteConfig.localStorageKeys.dashboard.showClosedPositions,
+        Number(value) || 0,
+      );
+    },
+    hidePortfolioValues(value) {
+      localStorage.setItem(
+        siteConfig.localStorageKeys.dashboard.hidePortfolioValues,
         Number(value) || 0,
       );
     },
@@ -202,7 +216,12 @@ export default {
     }
   },
   async created() {
-    this.showClosedPositions = localStorage.getItem('dashboard.showClosedPositions') === '1';
+    this.showClosedPositions = localStorage.getItem(
+      siteConfig.localStorageKeys.dashboard.showClosedPositions,
+    ) === '1';
+    this.hidePortfolioValues = localStorage.getItem(
+      siteConfig.localStorageKeys.dashboard.hidePortfolioValues,
+    ) === '1';
     this.loading = true;
     await this.getMyPortfolios();
     this.getportfolioLastMarketDays();
@@ -217,6 +236,10 @@ export default {
   mounted() {
     // 10 minutes refresh
     this.refreshInterval = setInterval(() => {
+      if (this.$refs?.pickerAndStats) {
+        this.$refs.pickerAndStats.startCooldown();
+      }
+
       this.triggerRefresh();
     }, 60e3 * 10);
   },

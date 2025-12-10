@@ -143,14 +143,14 @@
           <!-- ticker -->
           <div class="d-flex justify-space-between align-center py-1">
             <div class="text-no-wrap me-2">
-              <code class="text-lg">{{ item.ticker }}</code>
+              <code class="text-lg">{{ hidePortfolioValues ? '###%' :item.ticker }}</code>
             </div>
             <span class="secondary--text text-xs d-flex flex-column">
               <span>
-                <samp class="text--secondary pe-1">{{ ( item.qtyHold || item.qtyAdded || 0).toLocaleString() }}</samp>shares
+                <samp class="text--secondary pe-1">{{ hidePortfolioValues ? '#,###' : ( item.qtyHold || item.qtyAdded || 0).toLocaleString() }}</samp>shares
               </span>
               <span v-if="item.qtyHold > 1e-5">
-                <samp class="text--secondary">{{ toPercentage(getHoldingPositionPortions(item), false) }}</samp>
+                <samp class="text--secondary">{{ hidePortfolioValues ? '##.##%' : toPercentage(getHoldingPositionPortions(item), false) }}</samp>
               </span>
             </span>
             <v-spacer />
@@ -170,8 +170,8 @@
             <div class="text-right">
               <samp
                 :class="`${getTrendColor(getDayChangePercentages(item))}--text pe-2 text-base`"
-              >{{ toUDPercentage(getDayChangePercentages(item)) }}</samp>/
-              <samp class="text-base ps-1">{{ toCurrency(getDayChange(item)) }}</samp>
+              >{{ hidePortfolioValues ? '##.##%' :toUDPercentage(getDayChangePercentages(item)) }}</samp>/
+              <samp class="text-base ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(getDayChange(item)) }}</samp>
             </div>
           </div>
           <!-- profits and losses -->
@@ -179,9 +179,9 @@
             <span class="caption text--secondary">Total P/L</span>
             <a class="pa-0 mx-0 text--primary" @click="popPnLMenu($event, item)">
               <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap ps-1 text-base`">
-                {{ toUDPercentage(getGainPercentages(item)) }}
+                {{ hidePortfolioValues ? '##.##%' : toUDPercentage(getGainPercentages(item)) }}
               </samp>/
-              <samp class="text-base ps-1">{{ toCurrency(getPNL(item)) }}</samp>
+              <samp class="text-base ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(getPNL(item)) }}</samp>
             </a>
           </div>
           <!-- avg. revenue/price vs avg. cost -->
@@ -190,20 +190,20 @@
             <span v-else class="caption text--secondary">Price/avg. cost</span>
             <div class="text-right">
               <span v-if="isClosedStats" class="pe-2">
-                <samp class="text-base">{{ toCurrency(item.sumRevenue / item.qtyDeced) }}</samp>
+                <samp class="text-base">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.sumRevenue / item.qtyDeced) }}</samp>
               </span>
               <span v-else class="pe-2">
-                <samp class="text-base">{{ toCurrency(item.pClose) }}</samp>
+                <samp class="text-base">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.pClose) }}</samp>
               </span>
               <span>/</span>
-              <samp class="text-base ps-2">{{ toCurrency(item.sumCost / item.qtyAdded) }}</samp>
+              <samp class="text-base ps-2">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.sumCost / item.qtyAdded) }}</samp>
             </div>
           </div>
           <!-- dividends -->
           <div class="d-flex justify-space-between align-center pa-1">
             <span class="caption text--secondary">Post-tax dividends</span>
             <div class="text-right">
-              <samp class="text-base ps-1">{{ toCurrency(item.sumDividend) }}</samp>
+              <samp class="text-base ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(item.sumDividend) }}</samp>
             </div>
           </div>
         </div>
@@ -217,17 +217,17 @@
       >
         <div :key="header.value" style="height: 20px">
           <span v-if="header.value === 'ticker'" class="text-base">
-            <code>&nbsp;{{ item.ticker }}&nbsp;</code>
+            <code>&nbsp;{{ hidePortfolioValues ? '###' : item.ticker }}&nbsp;</code>
           </span>
           <div v-else-if="header.value === 'dayChange'" class="text-no-wrap">
             <samp class="text--primary">
-              {{ toCurrency(getDayChange(item)) }}
+              {{ hidePortfolioValues ? '$###.##' : toCurrency(getDayChange(item)) }}
             </samp>
             <span class="pe-2 secondary--text text-lg">/</span>
             <samp
               :class="`${getTrendColor(getDayChangePercentages(item))}--text`
               "
-            >{{ toUDPercentage(getDayChangePercentages(item)) }}</samp>
+            >{{ hidePortfolioValues ? '##.##%' : toUDPercentage(getDayChangePercentages(item)) }}</samp>
           </div>
           <vue-apex-charts
             v-if="header.value === 'dayTrend'"
@@ -241,34 +241,34 @@
           />
           <div v-else-if="header.value === 'PNL'">
             <a class="pa-0 mx-0 text--primary" @click="popPnLMenu($event, item)">
-              <samp>{{ toCurrency(getPNL(item)) }}</samp>
+              <samp>{{ hidePortfolioValues ? '$###.##' : toCurrency(getPNL(item)) }}</samp>
             </a>
           </div>
           <div v-else-if="header.value === 'PNL%'">
             <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap`" @click="popPnLMenu($event, item)">
-              {{ toUDPercentage(getGainPercentages(item)) }}
+              {{ hidePortfolioValues ? '##.##%' : toUDPercentage(getGainPercentages(item)) }}
             </samp>
           </div>
           <div v-else-if="header.value === 'txCost'">
             <a class="pa-0 mx-0 text--primary" @click="popTxCostMenu($event, item)">
-              <samp>{{ toCurrency(getTxCost(item)) }}</samp>
+              <samp>{{ hidePortfolioValues ? '$###.##' : toCurrency(getTxCost(item)) }}</samp>
             </a>
           </div>
           <div v-else-if="header.value === 'closedAvgRevenue'">
             <samp class="text-right">
-              {{ toCurrency(item.sumRevenue / item.qtyDeced) }}
+              {{ hidePortfolioValues ? '$###.##' : toCurrency(item.sumRevenue / item.qtyDeced) }}
             </samp>
           </div>
           <div v-else-if="header.value === 'closedAvgCost'">
             <samp class="text-right">
-              {{ toCurrency(item.sumCost / item.qtyAdded) }}
+              {{ hidePortfolioValues ? '$###.##' : toCurrency(item.sumCost / item.qtyAdded) }}
             </samp>
           </div>
           <div v-else-if="header.type === '$'" class="text-right">
-            <samp>{{ toCurrency(item[header.value]) }}</samp>
+            <samp>{{ hidePortfolioValues ? '$###.##' : toCurrency(item[header.value]) }}</samp>
           </div>
           <div v-else-if="header.type === '#'" class="text-right">
-            <samp>{{ item[header.value].toLocaleString() }}</samp>
+            <samp>{{ hidePortfolioValues ? '###.##' : item[header.value].toLocaleString() }}</samp>
           </div>
         </div>
       </template>
@@ -309,6 +309,10 @@ export default {
       type: Object,
       required: true,
       default: () => ({}),
+    },
+    hidePortfolioValues: {
+      type: Boolean,
+      default: false,
     },
   },
   data: () => ({
@@ -543,7 +547,7 @@ export default {
       // baseline
       const baseLine = [
         { x: dataPoints[0]?.x || new Date().getTime(), y: this.getBasePrice(item) },
-        { x: dataPoints[dataPoints.length - 1]?.x || new Date().getTime(), y: this.getBasePrice(item) },
+        { x: dataPoints[dataPoints.length - 1]?.x || new Date().getTime() + 1e-6, y: this.getBasePrice(item) },
       ];
 
       chartSeries.push({

@@ -1,16 +1,24 @@
 <template>
   <v-card>
-    <v-card-title class="align-start">
+    <v-card-title class="d-flex align-center">
       <span>
         {{ portfolio && portfolio.portfolioName }}
       </span>
       <v-spacer />
-      <v-btn :disabled="loading || isCooldownActive" text small class="pe-2" @click="refreshData()">
+
+      <v-chip text small class="me-2" @click="$emit('toggleHideValues')">
         <v-icon small>
-          {{ icons.mdiRefresh }}
+          {{ hidePortfolioValues ? icons.mdiEyeOffOutline : icons.mdiEyeOutline }}
         </v-icon>
-        <samp class="ps-1">{{ timeRemaining ? formatSecondsToTime(timeRemaining ) : 'refresh' }}</samp>
-      </v-btn>
+        <samp class="caption ps-1">{{ hidePortfolioValues? 'Show' : 'Hide' }} Values</samp>
+      </v-chip>
+      <v-chip :disabled="loading || isCooldownActive" text small class="pe-2" @click="refreshData()">
+        <v-icon small>
+          {{ loading || isCooldownActive ? icons.mdiTimerSand : icons.mdiRefresh }}
+        </v-icon>
+        <samp v-if="timeRemaining" class="text-sm ps-1">{{ formatSecondsToTime(timeRemaining) }}</samp>
+        <span v-else>Refresh</span>
+      </v-chip>
       <v-menu v-model="pickerVisible" offset-y left min-width="280">
         <template v-slot:activator="{ on, attrs }">
           <v-btn icon small v-bind="attrs" v-on="on">
@@ -37,7 +45,9 @@
                 <v-list-item-content>
                   <div class="d-flex justify-space-between align-center">
                     <span class="subtitle-2">{{ portfolioItem.portfolioName }}</span>
-                    <pre>{{ toCurrency(portfolioItem.sumDeposit) }}</pre>
+                    <pre>{{ hidePortfolioValues
+                      ? '#'.repeat(7)
+                      : toCurrency(portfolioItem.sumDeposit) }}</pre>
                   </div>
                 </v-list-item-content>
               </v-list-item>
@@ -56,13 +66,13 @@
       <span class="caption me-3 pb-2">
         First tx.
         <v-chip v-if="portfolio" outlineddense small class="my-n3 py-0">
-          {{ toLocaleDateString(portfolio && portfolio.firstTxTimestamp || '') }}
+          {{ hidePortfolioValues? '--/--/----' : toLocaleDateString(portfolio && portfolio.firstTxTimestamp || '') }}
         </v-chip>
       </span>
       <span class="caption pb-2">
         Account age
         <v-chip v-if="portfolio" dense small class="my-n3 py-0">
-          {{ toAgeString(portfolio && portfolio.firstTxTimestamp || '') }}
+          {{ hidePortfolioValues? '--y --m --d' : toAgeString(portfolio && portfolio.firstTxTimestamp || '') }}
         </v-chip>
       </span>
     </v-card-subtitle>
@@ -115,6 +125,9 @@ import {
   mdiPiggyBank,
   mdiTrophy,
   mdiRefresh,
+  mdiTimerSand,
+  mdiEyeOffOutline,
+  mdiEyeOutline,
 } from '@mdi/js';
 import {
   toCurrency, toPercentage, toLocaleDateString, toAgeString, getTrendColor, formatSecondsToTime,
@@ -147,6 +160,10 @@ export default {
       required: true,
       default: () => ({}),
     },
+    hidePortfolioValues: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: () => ({
     toCurrency,
@@ -171,7 +188,11 @@ export default {
       mdiChevronRight,
       mdiPiggyBank,
       mdiTrophy,
+      mdiTimerSand,
       mdiRefresh,
+      mdiEyeOffOutline,
+      mdiEyeOutline,
+
     },
   }),
   computed: {
@@ -191,28 +212,28 @@ export default {
       return [
         {
           title: 'Net Value',
-          content: toCurrency(this.lastMarketDayData?.vClose),
+          content: this.hidePortfolioValues ? '$###,###.##' : toCurrency(this.lastMarketDayData?.vClose),
           icon: mdiCurrencyUsd,
           color: 'warning',
         },
         {
           title: 'Day Change',
-          content: toCurrency(dailyDiff),
-          caption: toPercentage(dailyDiffPercentages),
+          content: this.hidePortfolioValues ? '$###,###.##' : toCurrency(dailyDiff),
+          caption: this.hidePortfolioValues ? '##.##%' : toPercentage(dailyDiffPercentages),
           icon: this.getTrendDiffIcon(dailyDiffPercentages),
           captionColor: this.getTrendColor(dailyDiffPercentages),
           color: 'primary',
         },
         {
           title: 'Principals',
-          content: toCurrency(principals),
+          content: this.hidePortfolioValues ? '$###,###.##' : toCurrency(principals),
           icon: mdiPiggyBank,
           color: 'info',
         },
         {
           title: 'Profit/Loss',
-          content: toCurrency(totalProfitAndLoss),
-          caption: toPercentage(totalProfitAndLossPercentages),
+          content: this.hidePortfolioValues ? '$###,###.##' : toCurrency(totalProfitAndLoss),
+          caption: this.hidePortfolioValues ? '##.##%' : toPercentage(totalProfitAndLossPercentages),
           icon: mdiTrophy,
           contentColor: '',
           captionColor: this.getTrendColor(totalProfitAndLossPercentages),
