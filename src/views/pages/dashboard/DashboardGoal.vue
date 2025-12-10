@@ -8,7 +8,7 @@
       <v-col cols="8">
         <v-card-text>
           My progress
-          <v-progress-linear height="8" :value="value / 1e4 " color="primary" class="my-2" />
+          <v-progress-linear height="8" :value="(hidePortfolioValues ? 99 : value / goal) * 1e2" color="primary" class="my-2" />
           <div class="font-weight-bold text-4xl pt-1">
             {{ hidePortfolioValues ? '##.##' + '%' : toPercentage(value / goal, false) }}
           </div>

@@ -6,18 +6,18 @@
       </span>
       <v-spacer />
 
-      <v-chip text small class="me-2" @click="$emit('toggleHideValues')">
+      <v-chip small class="px-1 me-2" @click="$emit('toggleHideValues')">
         <v-icon small>
           {{ hidePortfolioValues ? icons.mdiEyeOffOutline : icons.mdiEyeOutline }}
         </v-icon>
-        <samp class="caption ps-1">{{ hidePortfolioValues? 'Show' : 'Hide' }} Values</samp>
+        <samp v-if="$vuetify.breakpoint.mdAndUp" class="caption ps-1">{{ hidePortfolioValues? 'Show' : 'Hide' }} Values</samp>
       </v-chip>
-      <v-chip :disabled="loading || isCooldownActive" text small class="pe-2" @click="refreshData()">
+      <v-chip :disabled="loading || isCooldownActive" text small class="px-1 me-2" @click="refreshData()">
         <v-icon small>
           {{ loading || isCooldownActive ? icons.mdiTimerSand : icons.mdiRefresh }}
         </v-icon>
-        <samp v-if="timeRemaining" class="text-sm ps-1">{{ formatSecondsToTime(timeRemaining) }}</samp>
-        <span v-else>Refresh</span>
+        <samp v-if="timeRemaining" class="text-xs">{{ formatSecondsToTime(timeRemaining) }}</samp>
+        <span v-else-if="$vuetify.breakpoint.mdAndUp" class="ps-1">Refresh</span>
       </v-chip>
       <v-menu v-model="pickerVisible" offset-y left min-width="280">
         <template v-slot:activator="{ on, attrs }">
@@ -58,12 +58,6 @@
     </v-card-title>
     <v-card-subtitle class="d-flex flex-wrap justify-start align-center pt-1">
       <span class="caption me-3 pb-2">
-        Market day
-        <v-chip v-if="lastMarketDayData" dense small class="my-n3 py-0">
-          {{ toLocaleDateString(lastMarketDayData.timestamp) }}
-        </v-chip>
-      </span>
-      <span class="caption me-3 pb-2">
         First tx.
         <v-chip v-if="portfolio" outlineddense small class="my-n3 py-0">
           {{ hidePortfolioValues? '--/--/----' : toLocaleDateString(portfolio && portfolio.firstTxTimestamp || '') }}
@@ -72,7 +66,13 @@
       <span class="caption pb-2">
         Account age
         <v-chip v-if="portfolio" dense small class="my-n3 py-0">
-          {{ hidePortfolioValues? '--y --m --d' : toAgeString(portfolio && portfolio.firstTxTimestamp || '') }}
+          {{ hidePortfolioValues? '-y -m -d' : toAgeString(portfolio && portfolio.firstTxTimestamp || '') }}
+        </v-chip>
+      </span>
+      <span class="caption me-3 pb-2">
+        Market day
+        <v-chip v-if="lastMarketDayData" dense small class="my-n3 py-0">
+          {{ toLocaleDateString(lastMarketDayData.timestamp) }}
         </v-chip>
       </span>
     </v-card-subtitle>
@@ -218,7 +218,7 @@ export default {
         },
         {
           title: 'Day Change',
-          content: this.hidePortfolioValues ? '$###,###.##' : toCurrency(dailyDiff),
+          content: this.hidePortfolioValues ? '$###.##' : toCurrency(dailyDiff),
           caption: this.hidePortfolioValues ? '##.##%' : toPercentage(dailyDiffPercentages),
           icon: this.getTrendDiffIcon(dailyDiffPercentages),
           captionColor: this.getTrendColor(dailyDiffPercentages),

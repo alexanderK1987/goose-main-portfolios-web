@@ -115,7 +115,6 @@ export default {
   watch: {
     chartOptions: {
       handler() {
-        console.log(this.chartOptions);
         this.chartKey = new Date().getTime();
       },
       deep: true,

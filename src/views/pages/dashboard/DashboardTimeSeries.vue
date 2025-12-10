@@ -5,7 +5,7 @@
         <v-col cols="12" class="d-flex align-center flex-wrap justify-space-between">
           <span class="text-no-wrap">Portfolio Net Values</span>
           <v-spacer />
-          <v-menu offset-y style="z-index: 30;">
+          <v-menu left style="z-index: 30;">
             <template v-slot:activator="{ on, attrs }">
               <v-chip dense outlined class="my-n2" v-bind="attrs" v-on="on">
                 <v-icon small class="me-1">

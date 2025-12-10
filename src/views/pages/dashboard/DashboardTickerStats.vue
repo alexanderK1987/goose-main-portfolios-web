@@ -143,7 +143,7 @@
           <!-- ticker -->
           <div class="d-flex justify-space-between align-center py-1">
             <div class="text-no-wrap me-2">
-              <code class="text-lg">{{ hidePortfolioValues ? '###%' :item.ticker }}</code>
+              <code class="text-lg">{{ hidePortfolioValues ? '###' :item.ticker }}</code>
             </div>
             <span class="secondary--text text-xs d-flex flex-column">
               <span>
@@ -472,10 +472,10 @@ export default {
     },
     getGainPercentages(item) {
       if (item.vClose > 1e-5) {
-        return (item.vClose - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumHoldingCost) - 1.0;
+        return (item.vClose + item.sumDividend - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumHoldingCost) - 1.0;
       }
 
-      return (item.sumRevenue - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumCost) - 1.0;
+      return (item.sumRevenue + item.sumDividend - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumCost) - 1.0;
     },
     customSort(items, sortBy, sortDesc) {
       const isDescending = sortDesc[0];
