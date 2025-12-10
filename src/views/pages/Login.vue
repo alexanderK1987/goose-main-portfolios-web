@@ -13,7 +13,7 @@
             class="my-4"
           />
           <p class="text-2xl font-weight-semibold text--primary my-2">
-            Welcome to Gooseland!
+            Gooseland!
           </p>
         </v-card-title>
 
