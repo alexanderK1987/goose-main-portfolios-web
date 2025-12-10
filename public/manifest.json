@@ -2,7 +2,7 @@
   "name": "Goose Tracker - Portfolio Tracking App",
   "short_name": "Goose Tracker",
   "description": "Portfolio Tracking App",
-  "start_url": "/goose-tracker/pages/dashboard",
+  "start_url": "/goose-tracker/pages/login",
   "display": "standalone",
   "background_color": "#9155FD",
   "theme_color": "#000000",
