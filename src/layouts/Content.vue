@@ -40,7 +40,7 @@
       </div>
     </v-app-bar>
 
-    <v-main>
+    <v-main style="overflow-x: hidden;">
       <div class="app-content-container px-4 pb-6">
         <slot />
       </div>

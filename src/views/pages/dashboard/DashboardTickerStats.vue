@@ -141,7 +141,7 @@
       <template v-if="$vuetify.breakpoint.smAndDown" v-slot:item="{ item }">
         <div class="pa-2">
           <!-- ticker -->
-          <div class="d-flex justify-space-between align-center py-1">
+          <div class="d-flex justify-space-between align-center pt-1">
             <div class="text-no-wrap me-2">
               <code class="text-lg">{{ hidePortfolioValues ? '###' :item.ticker }}</code>
             </div>
@@ -165,45 +165,45 @@
             />
           </div>
           <!-- day change -->
-          <div v-if="!isClosedStats" class="d-flex justify-space-between align-center pa-1">
+          <div v-if="!isClosedStats" class="d-flex justify-space-between align-center px-1 pt-1">
             <span class="caption text--secondary">Day Change</span>
             <div class="text-right">
               <samp
-                :class="`${getTrendColor(getDayChangePercentages(item))}--text pe-2 text-base`"
+                :class="`${getTrendColor(getDayChangePercentages(item))}--text pe-2 text-sm`"
               >{{ hidePortfolioValues ? '##.##%' :toUDPercentage(getDayChangePercentages(item)) }}</samp>/
-              <samp class="text-base ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(getDayChange(item)) }}</samp>
+              <samp class="text-sm ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(getDayChange(item)) }}</samp>
             </div>
           </div>
           <!-- profits and losses -->
-          <div class="d-flex justify-space-between align-center pa-1">
+          <div class="d-flex justify-space-between align-center px-1 pt-1">
             <span class="caption text--secondary">Total P/L</span>
             <a class="pa-0 mx-0 text--primary" @click="popPnLMenu($event, item)">
-              <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap ps-1 text-base`">
+              <samp :class="`${getTrendColor(getGainPercentages(item))}--text text-no-wrap ps-1 text-sm`">
                 {{ hidePortfolioValues ? '##.##%' : toUDPercentage(getGainPercentages(item)) }}
               </samp>/
-              <samp class="text-base ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(getPNL(item)) }}</samp>
+              <samp class="text-sm ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(getPNL(item)) }}</samp>
             </a>
           </div>
           <!-- avg. revenue/price vs avg. cost -->
-          <div class="d-flex justify-space-between align-center pa-1">
+          <div class="d-flex justify-space-between align-center px-1 pt-1">
             <span v-if="isClosedStats" class="caption text--secondary">Avg. revn./cost</span>
             <span v-else class="caption text--secondary">Price/avg. cost</span>
             <div class="text-right">
               <span v-if="isClosedStats" class="pe-2">
-                <samp class="text-base">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.sumRevenue / item.qtyDeced) }}</samp>
+                <samp class="text-sm">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.sumRevenue / item.qtyDeced) }}</samp>
               </span>
               <span v-else class="pe-2">
-                <samp class="text-base">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.pClose) }}</samp>
+                <samp class="text-sm">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.pClose) }}</samp>
               </span>
               <span>/</span>
-              <samp class="text-base ps-2">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.sumCost / item.qtyAdded) }}</samp>
+              <samp class="text-sm ps-2">{{ hidePortfolioValues ? '$###.##' : toCurrency(item.sumCost / item.qtyAdded) }}</samp>
             </div>
           </div>
           <!-- dividends -->
-          <div class="d-flex justify-space-between align-center pa-1">
+          <div class="d-flex justify-space-between align-center px-1  pt-1">
             <span class="caption text--secondary">Post-tax dividends</span>
             <div class="text-right">
-              <samp class="text-base ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(item.sumDividend) }}</samp>
+              <samp class="text-sm ps-1">{{ hidePortfolioValues ? '$###,###.##' : toCurrency(item.sumDividend) }}</samp>
             </div>
           </div>
         </div>
