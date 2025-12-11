@@ -40,6 +40,9 @@
               autocomplete="current-password"
               @click:append="isPasswordVisible = !isPasswordVisible"
             />
+            <span class="caption error--text" v-if="error">
+              {{ error }}
+            </span>
             <div class="d-flex align-center justify-space-between flex-wrap">
               <!-- forgot link -->
               <a
@@ -48,7 +51,6 @@
                 class="mt-1"
               > Forgot Password? </a>
             </div>
-
             <v-btn
               type="submit"
               color="primary"
