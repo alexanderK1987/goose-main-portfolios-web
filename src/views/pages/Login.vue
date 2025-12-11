@@ -3,25 +3,18 @@
     <div class="auth-inner">
       <v-card class="auth-card">
         <!-- logo -->
-        <v-card-title class="align-center justify-center py-2">
+        <v-card-text class="align-center pb-8 d-flex flex-column">
           <v-img
             :src="require('@/assets/images/logos/goose-logo.svg')"
-            max-height="156px"
             max-width="156px"
             alt="logo"
             contain
             class="my-4"
           />
-          <p class="text-2xl font-weight-semibold text--primary my-2">
+          <div class="text-xl font-weight-bold">
             Gooseland!
-          </p>
-        </v-card-title>
-
-        <!-- title -->
-        <v-card-text>
-          <div class="text-center">
-            Please sign-in to start the adventure!
           </div>
+          Please sign-in to start the adventure!
         </v-card-text>
 
         <!-- login form -->
@@ -33,6 +26,7 @@
               label="Email"
               placeholder="john@example.com"
               :rules="[required]"
+              autocomplete="username"
             />
 
             <v-text-field
@@ -43,6 +37,7 @@
               :type="isPasswordVisible ? 'text' : 'password'"
               :append-icon="isPasswordVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
               :rules="[required]"
+              autocomplete="current-password"
               @click:append="isPasswordVisible = !isPasswordVisible"
             />
             <div class="d-flex align-center justify-space-between flex-wrap">
@@ -175,7 +170,7 @@ export default {
         localStorage.setItem(siteConfig.refreshTokenStorageKey, refresh_token);
 
         // Redirect to the authenticated area
-        router.push('/pages/account-settings');
+        router.push('/pages/dashboard');
       } catch (err) {
         // Handle login failure (e.g., 401 Unauthorized)
         this.error = 'Login failed. Please check your credentials.';

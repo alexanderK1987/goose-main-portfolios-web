@@ -547,7 +547,7 @@ export default {
       // baseline
       const baseLine = [
         { x: dataPoints[0]?.x || new Date().getTime(), y: this.getBasePrice(item) },
-        { x: dataPoints[dataPoints.length - 1]?.x || new Date().getTime() + 1e-6, y: this.getBasePrice(item) },
+        { x: dataPoints[dataPoints.length - 1]?.x || new Date().getTime() + 1, y: this.getBasePrice(item) },
       ];
 
       chartSeries.push({
