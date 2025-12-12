@@ -279,7 +279,7 @@ export default {
 
     startCooldown() {
       this.isCooldownActive = true;
-      this.timeToNextRefresh = (new Date()).getTime() + 10e3;
+      this.timeToNextRefresh = (new Date()).getTime() + 300e3;
       this.countdownInterval = setInterval(() => {
         this.reactiveTicker += 1;
         if (this.timeToNextRefresh - new Date().getTime() <= 0) {
