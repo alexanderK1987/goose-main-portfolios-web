@@ -82,6 +82,7 @@
             :penultimate-market-day-data="{}"
             :hide-portfolio-values="hidePortfolioValues"
             :ticker-paged-txs="tickerPagedTxs"
+            :ticker-paged-tx-loading="tickerPagedTxLoading"
             @query-ticker-tx="queryTickerTxs($event)"
           />
           <div v-else class="d-flex align-center pt-2" @click="showClosedPositions = !showClosedPositions">

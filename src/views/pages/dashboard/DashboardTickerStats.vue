@@ -1,29 +1,38 @@
 <template>
   <v-card>
-    <v-menu
+    <v-dialog
       v-model="showTickerTxHistory"
-      offset-y
-      absolute
-      :position-x="menuX"
-      :position-y="menuY"
       :close-on-content-click="false"
+      max-width="380"
+      min-width="340"
+      style="overflow-y: hidden;"
     >
-      <v-card v-if="menuTargetItem" min-width="340" :loading="tickerPagedTxLoading" class="py-1">
-        <v-card-text class="white--text info py-2 px-4 d-flex align-center justify-space-between">
+      <v-card v-if="menuTargetItem" :loading="tickerPagedTxLoading" class="py-1 d-flex flex-column" height="600" style="overflow-y: hidden;">
+        <v-card-text class="white--text info py-2 px-4 d-flex justify-space-between align-center">
           <span><span class="font-weight-bold">{{ menuTargetItem.ticker }}</span> - transaction history</span>
           <v-icon small @click="showTickerTxHistory = false">
             {{ icons.mdiClose }}
           </v-icon>
         </v-card-text>
+        <v-btn
+          :disabled="tickerTxQueryParams.page === 1"
+          max-height="2em"
+          x-small
+          block
+          class="text-center py-0"
+          @click="flipTickerTxPage(-1)"
+        >
+          <v-icon>{{ icons.mdiTriangleSmallUp }}</v-icon>
+        </v-btn>
         <v-card-text
           v-if="Array.isArray(tickerPagedTxs.results)"
-          class="caption px-2 pb-0 mb-0"
+          class="caption px-0 pb-0 mb-0 flex-grow-1"
         >
-          <div v-if="tickerTxQueryParams.page > 1" class="text-center" @click="flipTickerTxPage(-1)">
-            <v-icon>{{ icons.mdiTriangleSmallUp }}</v-icon>
-            <v-divider />
-          </div>
-          <div v-for="tickerTx in tickerPagedTxs.results" :key="tickerTx._id">
+          <v-overlay v-model="tickerPagedTxLoading" absolute opacity="0.80">
+            <v-progress-circular indeterminate />
+          </v-overlay>
+
+          <div v-for="tickerTx in tickerPagedTxs.results" :key="tickerTx._id" class="px-3">
             <v-row no-gutters>
               <v-col cols="7" class="text-sm d-flex align-center py-3">
                 <samp>{{ tickerTx.timestamp.split('T')[0] }}</samp>
@@ -57,12 +66,20 @@
             </v-row>
             <v-divider />
           </div>
-          <div v-if="tickerPagedTxs.hasMore" class="text-center" @click="flipTickerTxPage(1)">
-            <v-icon>{{ icons.mdiTriangleSmallDown }}</v-icon>
-          </div>
         </v-card-text>
+        <v-spacer />
+        <v-btn
+          :disabled="!tickerPagedTxs.hasMore"
+          x-small
+          max-height="2em"
+          block
+          class="text-center py-0"
+          @click="flipTickerTxPage(1)"
+        >
+          <v-icon>{{ icons.mdiTriangleSmallDown }}</v-icon>
+        </v-btn>
       </v-card>
-    </v-menu>
+    </v-dialog>
     <v-menu
       v-model="showTxCostMenu"
       offset-y
@@ -486,10 +503,11 @@ export default {
       this.showTxCostMenu = false;
       this.showPnLMenu = false;
       this.showTickerTxHistory = true;
-      const targetElement = $event.currentTarget;
-      const rect = targetElement.getBoundingClientRect();
-      this.menuX = rect.left;
-      this.menuY = rect.bottom;
+
+      // const targetElement = $event.currentTarget;
+      // const rect = targetElement.getBoundingClientRect();
+      // this.menuX = rect.left;
+      // this.menuY = rect.bottom;
       this.menuTargetItem = item;
       const params = {
         ticker: item.ticker,
