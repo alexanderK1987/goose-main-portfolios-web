@@ -23,7 +23,7 @@ const processQueue = (error, token = null) => {
 // --- 3. Request Interceptor (Add Access Token) ---
 api.interceptors.request.use(
   config => {
-    const token = localStorage.getItem(siteConfig.tokenStorageKey);
+    const token = localStorage.getItem(siteConfig.localStorageKeys.auth.tokenStorageKey);
     const newConfig = { ...config };
     if (token) {
       newConfig.headers = {
@@ -62,7 +62,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem(siteConfig.refreshTokenStorageKey);
+      const refreshToken = localStorage.getItem(siteConfig.localStorageKeys.auth.refreshTokenStorageKey);
       const REFRESH_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userRefresh}`;
 
       // If no refresh token exists, immediately redirect to login
@@ -82,9 +82,9 @@ api.interceptors.response.use(
         const { access_token, refresh_token: newRefreshToken } = rs.data;
 
         // Update tokens in storage
-        localStorage.setItem(siteConfig.tokenStorageKey, access_token);
+        localStorage.setItem(siteConfig.localStorageKeys.auth.tokenStorageKey, access_token);
         if (newRefreshToken) {
-          localStorage.setItem(siteConfig.refreshTokenStorageKey, newRefreshToken);
+          localStorage.setItem(siteConfig.localStorageKeys.auth.refreshTokenStorageKey, newRefreshToken);
         }
 
         // Update original request header and retry it
@@ -94,8 +94,8 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (_error) {
         // Refresh failed: Clear all tokens and redirect
-        localStorage.removeItem(siteConfig.tokenStorageKey);
-        localStorage.removeItem(siteConfig.refreshTokenStorageKey);
+        localStorage.removeItem(siteConfig.localStorageKeys.auth.tokenStorageKey);
+        localStorage.removeItem(siteConfig.localStorageKeys.auth.refreshTokenStorageKey);
         processQueue(_error, null);
         router.push('/pages/login');
 

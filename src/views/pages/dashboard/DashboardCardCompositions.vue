@@ -142,14 +142,13 @@ export default {
 ::v-deep .apexcharts-legend-text {
   margin-left: 0rem !important;
   padding-left: 0.25rem;
-  font-size: 0.2rem !important;
 }
 ::v-deep .apexcharts-canvas .apexcharts-pie .apexcharts-datalabel-label {
   font-size: 1.2rem !important;
   transform: translateY(0rem) !important;
 }
 ::v-deep .apexcharts-canvas .apexcharts-pie .apexcharts-datalabel-value {
-  font-size: 1.1rem !important;
+  font-size: 1.0rem !important;
   transform: translateY(-0.6rem) !important;
 }
 </style>

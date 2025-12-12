@@ -538,7 +538,13 @@ export default {
 
       const chartSeries = [
         // full day trend
-        { name: 'F', data: dataPoints },
+        {
+          name: 'F',
+          data: [
+            { x: (dataPoints[0]?.x || new Date().getTime()) - 1e-3, y: this.getBasePrice(item) },
+            ...dataPoints,
+          ],
+        },
 
         // market opened segment
         { name: 'O', data: dataPoints.filter(p => p.o) },
@@ -546,8 +552,11 @@ export default {
 
       // baseline
       const baseLine = [
-        { x: dataPoints[0]?.x || new Date().getTime(), y: this.getBasePrice(item) },
-        { x: dataPoints[dataPoints.length - 1]?.x || new Date().getTime() + 1, y: this.getBasePrice(item) },
+        { x: (dataPoints[0]?.x || new Date().getTime()) - 1e-3, y: this.getBasePrice(item) },
+        {
+          x: (dataPoints[dataPoints.length - 1]?.x || new Date().getTime()) + 1,
+          y: this.getBasePrice(item),
+        },
       ];
 
       chartSeries.push({

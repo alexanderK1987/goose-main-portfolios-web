@@ -3,7 +3,7 @@
     <div class="auth-inner">
       <v-card class="auth-card">
         <!-- logo -->
-        <v-card-text class="align-center pb-8 d-flex flex-column">
+        <v-card-text class="align-center pb-4 pt-0 d-flex flex-column">
           <v-img
             :src="require('@/assets/images/logos/goose-logo.svg')"
             max-width="156px"
@@ -23,44 +23,50 @@
             <v-text-field
               v-model="email"
               outlined
+              dense
+              hide-details
               label="Email"
-              placeholder="john@example.com"
               :rules="[required]"
+              placeholder="john@example.com"
               autocomplete="username"
+              class="py-2"
             />
-
             <v-text-field
               v-model="password"
               label="Password"
               outlined
-              placeholder="****************"
+              dense
+              hide-details
+              placeholder="************"
               :type="isPasswordVisible ? 'text' : 'password'"
               :append-icon="isPasswordVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
               :rules="[required]"
               autocomplete="current-password"
+              class="py-2"
               @click:append="isPasswordVisible = !isPasswordVisible"
             />
-            <span class="caption error--text" v-if="error">
-              {{ error }}
-            </span>
-            <div class="d-flex align-center justify-space-between flex-wrap">
-              <!-- forgot link -->
-              <a
-                v-if="enablePasswordReset"
-                href="javascript:void(0)"
-                class="mt-1"
-              > Forgot Password? </a>
+            <!-- forgot link -->
+            <div v-if="enablePasswordReset" class="d-flex align-center justify-space-between flex-wrap">
+              <a href="javascript:void(0)" class="mt-1">Forgot Password?</a>
+            </div>
+            <!-- remember me -->
+            <div class="d-flex justify-start my-n3 align-center ps-1">
+              <v-switch v-model="rememberMe" inset dense class="me-n2" />
+              <span>Remember me</span>
             </div>
             <v-btn
               type="submit"
               color="primary"
               block
               large
-              class="mt-6"
+              class="my-2"
               :loading="loading"
             >
               Login
             </v-btn>
+            <span v-if="error" class="caption error--text">
+              {{ error }}
+            </span>
           </v-form>
         </v-card-text>
 
@@ -137,6 +143,7 @@ export default {
     enablePasswordReset: false,
     enableRegister: false,
     socialLink: [],
+    rememberMe: false,
 
     email: '',
     password: '',
@@ -148,6 +155,28 @@ export default {
       mdiEyeOffOutline,
     },
   }),
+
+  watch: {
+    rememberMe(value) {
+      localStorage.setItem(siteConfig.localStorageKeys.auth.rememberMe, Number(value));
+    },
+  },
+
+  async created() {
+    this.rememberMe = localStorage.getItem(siteConfig.localStorageKeys.auth.rememberMe) === '1';
+    if (this.rememberMe) {
+      const accessToken = localStorage.getItem(siteConfig.localStorageKeys.auth.tokenStorageKey);
+      if (accessToken) {
+        try {
+          const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userProfile}`;
+          await this.$api.get(REQ_URL);
+          router.push('/pages/dashboard');
+        } catch (e) {
+          this.error = 'login expired';
+        }
+      }
+    }
+  },
 
   methods: {
     required(v) {
@@ -168,14 +197,14 @@ export default {
         const { access_token, refresh_token } = response.data;
 
         // Store the tokens using the configured keys
-        localStorage.setItem(siteConfig.tokenStorageKey, access_token);
-        localStorage.setItem(siteConfig.refreshTokenStorageKey, refresh_token);
+        localStorage.setItem(siteConfig.localStorageKeys.auth.tokenStorageKey, access_token);
+        localStorage.setItem(siteConfig.localStorageKeys.auth.refreshTokenStorageKey, refresh_token);
 
         // Redirect to the authenticated area
         router.push('/pages/dashboard');
       } catch (err) {
         // Handle login failure (e.g., 401 Unauthorized)
-        this.error = 'Login failed. Please check your credentials.';
+        this.error = 'Failed. Please check your credentials.';
         console.error('Login Error:', err);
       } finally {
         this.loading = false;

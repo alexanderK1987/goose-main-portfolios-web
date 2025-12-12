@@ -175,7 +175,8 @@ export default {
     pickerVisible: false,
     portfolioItemIdxSelected: 0,
     isCooldownActive: false,
-    timeRemaining: 0,
+    timeToNextRefresh: 0,
+    reactiveTicker: 0,
     countdownInterval: null,
     icons: {
       mdiTrendingUp,
@@ -196,6 +197,14 @@ export default {
     },
   }),
   computed: {
+    timeRemaining() {
+      const _ = this.reactiveTicker;
+      if (this.timeToNextRefresh - new Date().getTime() < 0) {
+        return 0;
+      }
+
+      return (this.timeToNextRefresh - new Date().getTime()) / 1e3;
+    },
     portfolio() {
       return Array.isArray(this.portfolios) ? this.portfolios[this.value] : {};
     },
@@ -250,6 +259,11 @@ export default {
       },
     },
   },
+  watch: {
+    $route() {
+      this.endCooldown();
+    },
+  },
   methods: {
     getTrendDiffIcon(diffPercentages) {
       return diffPercentages > 0.1e-2
@@ -265,11 +279,10 @@ export default {
 
     startCooldown() {
       this.isCooldownActive = true;
-      this.timeRemaining = 60;
+      this.timeToNextRefresh = (new Date()).getTime() + 10e3;
       this.countdownInterval = setInterval(() => {
-        this.timeRemaining -= 1;
-
-        if (this.timeRemaining <= 0) {
+        this.reactiveTicker += 1;
+        if (this.timeToNextRefresh - new Date().getTime() <= 0) {
           this.endCooldown();
         }
       }, 1000);
@@ -277,13 +290,13 @@ export default {
     endCooldown() {
       clearInterval(this.countdownInterval);
       this.isCooldownActive = false;
-      this.timeRemaining = 0;
+      this.timeToNextRefresh = 0;
     },
   },
 
   // Best practice: clear the interval when the component is destroyed
   beforeUnmount() {
-    if (this.countdownInterval) { clearInterval(this.countdownInterval); }
+    this.endCooldown();
   },
 };
 </script>

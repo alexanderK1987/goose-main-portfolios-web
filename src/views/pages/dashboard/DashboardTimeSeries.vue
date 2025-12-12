@@ -14,7 +14,7 @@
                 Stats
               </v-chip>
             </template>
-            <v-card class="py-1">
+            <v-card>
               <v-card-text class="white--text primary px-4 py-3">
                 <span class="font-weight-bold">Portfolio Perfomance</span>
               </v-card-text>
