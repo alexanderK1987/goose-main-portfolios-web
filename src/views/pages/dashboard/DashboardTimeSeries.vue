@@ -90,8 +90,8 @@
         :key="chartKey"
         :options="candlesticksChartOptions"
         :series="chartData"
-        :height="$vuetify.breakpoint.smAndDown ? 200:300"
-        :class="[$vuetify.breakpoint.smAndDown ? 'mr-n4 ml-n1 my-n4':'']"
+        :height="$vuetify.breakpoint.smAndDown ? 180:300"
+        :class="[$vuetify.breakpoint.smAndDown ? 'mt-n4 mb-n1 me-n3':'']"
         style="z-index: 1;"
         @mousewheel.stop=""
       />

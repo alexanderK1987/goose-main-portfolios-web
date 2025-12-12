@@ -1,6 +1,69 @@
 <template>
   <v-card>
     <v-menu
+      v-model="showTickerTxHistory"
+      offset-y
+      absolute
+      :position-x="menuX"
+      :position-y="menuY"
+      :close-on-content-click="false"
+    >
+      <v-card v-if="menuTargetItem" min-width="340" :loading="tickerPagedTxLoading" class="py-1">
+        <v-card-text class="white--text info py-2 px-4 d-flex align-center justify-space-between">
+          <span><span class="font-weight-bold">{{ menuTargetItem.ticker }}</span> - transaction history</span>
+          <v-icon small @click="showTickerTxHistory = false">
+            {{ icons.mdiClose }}
+          </v-icon>
+        </v-card-text>
+        <v-card-text
+          v-if="Array.isArray(tickerPagedTxs.results)"
+          class="caption px-2 pb-0 mb-0"
+        >
+          <div v-if="tickerTxQueryParams.page > 1" class="text-center" @click="flipTickerTxPage(-1)">
+            <v-icon>{{ icons.mdiTriangleSmallUp }}</v-icon>
+            <v-divider />
+          </div>
+          <div v-for="tickerTx in tickerPagedTxs.results" :key="tickerTx._id">
+            <v-row no-gutters>
+              <v-col cols="7" class="text-sm d-flex align-center py-3">
+                <samp>{{ tickerTx.timestamp.split('T')[0] }}</samp>
+                <v-btn
+                  x-small
+                  outlined
+                  :class="['text-xs', 'text-uppercase', 'ms-2 px-2 py-0']" dark
+                  :color="getActionColor(tickerTx.action)"
+                >
+                  {{ tickerTx.action }}
+                </v-btn>
+              </v-col>
+              <v-col cols="5" class="d-flex align-center caption">
+                <div
+                  v-if="['buy', 'sell'].includes(tickerTx.action)"
+                  class="d-flex flex-column secondary--text"
+                >
+                  <span><samp class="text--primary">{{ tickerTx.quantity }}</samp> shares</span>
+                  <span><samp class="text--primary">{{ toCurrency(tickerTx.price) }}</samp> per share</span>
+                </div>
+                <div
+                  v-if="['dividend'].includes(tickerTx.action)"
+                  class="d-flex flex-column secondary--text"
+                >
+                  <span><samp class="text--primary">{{ toCurrency(tickerTx.amount) }}</samp> nominal</span>
+                  <span>
+                    <samp :class="`${getTrendColor(-tickerTx.tax)}--text`">{{ toCurrency(-tickerTx.tax) }}</samp>
+                    tax{{ -tickerTx.tax > 0 ? ' refund' : '' }}</span>
+                </div>
+              </v-col>
+            </v-row>
+            <v-divider />
+          </div>
+          <div v-if="tickerPagedTxs.hasMore" class="text-center" @click="flipTickerTxPage(1)">
+            <v-icon>{{ icons.mdiTriangleSmallDown }}</v-icon>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-menu>
+    <v-menu
       v-model="showTxCostMenu"
       offset-y
       absolute
@@ -143,7 +206,7 @@
           <!-- ticker -->
           <div class="d-flex justify-space-between align-center pt-1">
             <div class="text-no-wrap me-2">
-              <code class="text-lg">{{ hidePortfolioValues ? '###' :item.ticker }}</code>
+              <code class="text-lg" @click="popTxHistoryMenu($event, item)">{{ hidePortfolioValues ? '###' :item.ticker }}</code>
             </div>
             <span class="secondary--text text-xs d-flex flex-column">
               <span>
@@ -215,9 +278,9 @@
         v-else
         #[`item.${header.value}`]="{ item }"
       >
-        <div :key="header.value" style="height: 20px">
-          <span v-if="header.value === 'ticker'" class="text-base">
-            <code>&nbsp;{{ hidePortfolioValues ? '###' : item.ticker }}&nbsp;</code>
+        <div :key="header.value" style="height: 3em" :class="['d-flex','align-center', `justify-${header.align || 'end'}`]">
+          <span v-if="header.value === 'ticker'" class="text-lg">
+            <code @click="popTxHistoryMenu($event, item)">&nbsp;{{ hidePortfolioValues ? '###' : item.ticker }}&nbsp;</code>
           </span>
           <div v-else-if="header.value === 'dayChange'" class="text-no-wrap">
             <samp class="text--primary">
@@ -239,6 +302,7 @@
             class="pr-0 mr-n2"
             @updated="handleChartRedraw(item)"
           />
+          <v-spacer v-if="header.value === 'dayTrend'" />
           <div v-else-if="header.value === 'PNL'">
             <a class="pa-0 mx-0 text--primary" @click="popPnLMenu($event, item)">
               <samp>{{ hidePortfolioValues ? '$###.##' : toCurrency(getPNL(item)) }}</samp>
@@ -277,10 +341,12 @@
 </template>
 
 <script>
-import { mdiInformationOutline, mdiChartPie } from '@mdi/js';
+import {
+  mdiInformationOutline, mdiClose, mdiTriangleSmallUp, mdiTriangleSmallDown,
+} from '@mdi/js';
 import VueApexCharts from 'vue-apexcharts';
 import {
-  toCurrency, toPercentage, getTrendColor, toUDPercentage,
+  toCurrency, toPercentage, getTrendColor, toUDPercentage, getActionColor,
 } from '@/utils/numberTools';
 
 import {
@@ -292,6 +358,14 @@ export default {
     VueApexCharts,
   },
   props: {
+    tickerPagedTxs: {
+      type: Object,
+      default: () => ({}),
+    },
+    tickerPagedTxLoading: {
+      type: Boolean,
+      default: false,
+    },
     value: {
       type: Array,
       default: () => [],
@@ -317,17 +391,22 @@ export default {
   },
   data: () => ({
     sparklineOptions,
+    getActionColor,
     toCurrency,
     toPercentage,
     toUDPercentage,
     getTrendColor,
     icons: {
-      mdiChartPie,
+      mdiClose,
       mdiInformationOutline,
+      mdiTriangleSmallUp,
+      mdiTriangleSmallDown,
     },
     menuTargetItem: null,
     showTxCostMenu: false,
     showPnLMenu: false,
+    showTickerTxHistory: false,
+    tickerTxQueryParams: {},
     menuX: 0,
     menuY: 0,
   }),
@@ -403,8 +482,36 @@ export default {
     getHoldingPositionPortions(item) {
       return item.vClose / this.lastMarketDayData.vClose;
     },
+    popTxHistoryMenu($event, item) {
+      this.showTxCostMenu = false;
+      this.showPnLMenu = false;
+      this.showTickerTxHistory = true;
+      const targetElement = $event.currentTarget;
+      const rect = targetElement.getBoundingClientRect();
+      this.menuX = rect.left;
+      this.menuY = rect.bottom;
+      this.menuTargetItem = item;
+      const params = {
+        ticker: item.ticker,
+        page: 1,
+        pageSize: 10,
+      };
+      if (JSON.stringify(params) !== JSON.stringify(this.tickerTxQueryParams)) {
+        this.tickerTxQueryParams = {
+          ticker: item.ticker,
+          page: 1,
+          pageSize: 10,
+        };
+        this.$emit('query-ticker-tx', this.tickerTxQueryParams);
+      }
+    },
+    flipTickerTxPage(offset) {
+      this.tickerTxQueryParams.page += offset;
+      this.$emit('query-ticker-tx', this.tickerTxQueryParams);
+    },
     popPnLMenu($event, item) {
       this.showTxCostMenu = false;
+      this.showTickerTxHistory = false;
       this.showPnLMenu = true;
       const targetElement = $event.currentTarget;
       const rect = targetElement.getBoundingClientRect();
@@ -414,6 +521,7 @@ export default {
     },
     popTxCostMenu($event, item) {
       this.showPnLMenu = false;
+      this.showTickerTxHistory = false;
       this.showTxCostMenu = true;
       const targetElement = $event.currentTarget;
       const rect = targetElement.getBoundingClientRect();

@@ -127,3 +127,21 @@ export function getTrendColor(diffPercentages) {
     : diffPercentages < 0
       ? 'error' : 'secondary';
 }
+
+export function getActionColor(action) {
+  switch (action) {
+    case 'buy':
+      return 'success';
+    case 'sell':
+      return 'error';
+    case 'dividend':
+    case 'interest':
+      return 'primary';
+    case 'deposit':
+      return 'info';
+    case 'withdraw':
+      return 'warning';
+    default:
+      return 'secondary';
+  }
+}

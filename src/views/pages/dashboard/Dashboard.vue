@@ -58,6 +58,9 @@
             :last-market-day-data="lastMarketDayData || {}"
             :penultimate-market-day-data="penultimateMarketDayData || {}"
             :hide-portfolio-values="hidePortfolioValues"
+            :ticker-paged-txs="tickerPagedTxs"
+            :ticker-paged-tx-loading="tickerPagedTxLoading"
+            @query-ticker-tx="queryTickerTxs($event)"
           />
           <v-divider v-else />
         </v-card-text>
@@ -78,6 +81,8 @@
             :last-market-day-data="{}"
             :penultimate-market-day-data="{}"
             :hide-portfolio-values="hidePortfolioValues"
+            :ticker-paged-txs="tickerPagedTxs"
+            @query-ticker-tx="queryTickerTxs($event)"
           />
           <div v-else class="d-flex align-center pt-2" @click="showClosedPositions = !showClosedPositions">
             <v-divider />
@@ -93,7 +98,7 @@
 <script>
 // eslint-disable-next-line object-curly-newline
 import { mdiChevronDown, mdiChevronUp } from '@mdi/js';
-import { snakeToCamel } from '@/utils/snakeCamelTools';
+import { snakeToCamel, camelToSnake } from '@/utils/snakeCamelTools';
 import siteConfig from '@/../.siteConfig';
 
 // demos
@@ -125,6 +130,8 @@ export default {
     showHoldings: true,
     showClosedPositions: true,
     hidePortfolioValues: false,
+    tickerPagedTxs: {},
+    tickerPagedTxLoading: false,
     icons: {
       mdiChevronDown,
       mdiChevronUp,
@@ -244,12 +251,28 @@ export default {
     }, 60e3 * 10);
   },
   methods: {
+    async queryTickerTxs($event) {
+      if (!this.portfolio) {
+        return;
+      }
+      this.tickerPagedTxLoading = true;
+      try {
+        const REQ_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.portfolioPagedTxsQuery(this.portfolio._id)}`;
+        const response = await this.$api.get(REQ_URL, { params: camelToSnake($event) });
+        this.tickerPagedTxs = snakeToCamel(response.data);
+      } catch (err) {
+        console.error(err);
+      }
+      this.tickerPagedTxLoading = false;
+    },
     pickPortfolioByIndex(pickerIdx) {
       this.portfolioIdx = pickerIdx;
     },
     detectUrlFragment() {
       const { hash } = window.location;
-      if (hash) {
+      if (hash === '#undefined') {
+        this.portfolioIdx = 0;
+      } else if (hash) {
         this.portfolioIdx = this?.portfolios?.findIndex(
           p => p?._id === hash.substring(1),
         ) || 0;
