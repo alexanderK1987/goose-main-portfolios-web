@@ -63,13 +63,13 @@
           {{ hidePortfolioValues? '--/--/----' : toLocaleDateString(portfolio && portfolio.firstTxTimestamp || '') }}
         </v-chip>
       </span>
-      <span class="caption pb-2">
+      <span class="caption me-3 pb-2">
         Account age
         <v-chip v-if="portfolio" dense small class="my-n3 py-0">
           {{ hidePortfolioValues? '-y -m -d' : toAgeString(portfolio && portfolio.firstTxTimestamp || '') }}
         </v-chip>
       </span>
-      <span class="caption me-3 pb-2">
+      <span class="caption pb-2">
         Market day
         <v-chip v-if="lastMarketDayData" dense small class="my-n3 py-0">
           {{ toLocaleDateString(lastMarketDayData.timestamp) }}
