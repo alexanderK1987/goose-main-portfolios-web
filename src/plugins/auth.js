@@ -61,7 +61,6 @@ api.interceptors.response.use(
 
       // Helper function to handle redirection safely
       const redirectToLogin = () => {
-        console.log(router.currentRoute);
         if (router.currentRoute.path !== '/pages/login') {
           router.push('/pages/login').catch(err => {
             // Ignore the "Navigation cancelled" or "Duplicated navigation" errors
