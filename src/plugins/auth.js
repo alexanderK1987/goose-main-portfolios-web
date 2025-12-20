@@ -41,13 +41,13 @@ api.interceptors.response.use(
 
     // Check for Unauthorized/Forbidden status and ensure we aren't already retrying
     if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
-      
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
           .then(token => {
             originalRequest.headers.Authorization = `Bearer ${token}`;
+
             return api(originalRequest);
           })
           .catch(err => Promise.reject(err));
@@ -74,6 +74,7 @@ api.interceptors.response.use(
       if (!refreshToken) {
         isRefreshing = false;
         redirectToLogin();
+
         return Promise.reject(error);
       }
 
@@ -99,7 +100,7 @@ api.interceptors.response.use(
         // Refresh failed: Clear all tokens and notify queue
         localStorage.removeItem(siteConfig.localStorageKeys.auth.tokenStorageKey);
         localStorage.removeItem(siteConfig.localStorageKeys.auth.refreshTokenStorageKey);
-        
+
         processQueue(_error, null);
         redirectToLogin();
 
