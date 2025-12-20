@@ -33,9 +33,6 @@ const routes = [
     path: '/pages/login',
     name: 'pages-login',
     component: () => import('@/views/pages/Login.vue'),
-    meta: {
-      layout: 'blank',
-    },
   },
   {
     path: '/pages/register',
