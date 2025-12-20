@@ -2,13 +2,11 @@ import axios from 'axios';
 import router from '@/router';
 import siteConfig from '@/../.siteConfig';
 
-// --- 1. Axios Instance Configuration ---
 const api = axios.create({
   baseURL: siteConfig.gooseApiUrl,
   timeout: siteConfig.axiosTimeout,
 });
 
-// --- 2. Refresh Token Logic Variables ---
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -20,7 +18,6 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// --- 3. Request Interceptor (Add Access Token) ---
 api.interceptors.request.use(
   config => {
     const token = localStorage.getItem(siteConfig.localStorageKeys.auth.tokenStorageKey);
@@ -37,44 +34,50 @@ api.interceptors.request.use(
   error => Promise.reject(error),
 );
 
-// --- 4. Response Interceptor (Handle 401 & Refresh) ---
 api.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config;
 
-    // Check if the error is 401 and it hasn't been retried
+    // Check for Unauthorized/Forbidden status and ensure we aren't already retrying
     if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
-      // A. Handle concurrent refresh attempts (Queue the request)
+      
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
           .then(token => {
             originalRequest.headers.Authorization = `Bearer ${token}`;
-
             return api(originalRequest);
           })
           .catch(err => Promise.reject(err));
       }
 
-      // B. Start refresh process
       originalRequest._retry = true;
       isRefreshing = true;
 
       const refreshToken = localStorage.getItem(siteConfig.localStorageKeys.auth.refreshTokenStorageKey);
       const REFRESH_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userRefresh}`;
 
-      // If no refresh token exists, immediately redirect to login
+      // Helper function to handle redirection safely
+      const redirectToLogin = () => {
+        if (router.currentRoute.value.path !== '/pages/login') {
+          router.push('/pages/login').catch(err => {
+            // Ignore the "Navigation cancelled" or "Duplicated navigation" errors
+            if (err.name !== 'NavigationDuplicated' && !err.message.includes('cancelled')) {
+              console.error(err);
+            }
+          });
+        }
+      };
+
       if (!refreshToken) {
         isRefreshing = false;
-        router.push('/pages/login');
-
+        redirectToLogin();
         return Promise.reject(error);
       }
 
       try {
-        // Attempt to refresh
         const rs = await axios.post(REFRESH_URL, {
           refresh_token: refreshToken,
         });
@@ -93,11 +96,12 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (_error) {
-        // Refresh failed: Clear all tokens and redirect
+        // Refresh failed: Clear all tokens and notify queue
         localStorage.removeItem(siteConfig.localStorageKeys.auth.tokenStorageKey);
         localStorage.removeItem(siteConfig.localStorageKeys.auth.refreshTokenStorageKey);
+        
         processQueue(_error, null);
-        router.push('/pages/login');
+        redirectToLogin();
 
         return Promise.reject(_error);
       } finally {
@@ -109,10 +113,8 @@ api.interceptors.response.use(
   },
 );
 
-// --- 5. Plugin Export ---
 export default {
   install(Vue) {
-    // Expose the configured API instance as $api on all Vue components
     Vue.prototype.$api = api;
   },
 };
