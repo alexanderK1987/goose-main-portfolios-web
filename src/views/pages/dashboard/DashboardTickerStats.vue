@@ -515,11 +515,7 @@ export default {
         pageSize: 10,
       };
       if (JSON.stringify(params) !== JSON.stringify(this.tickerTxQueryParams)) {
-        this.tickerTxQueryParams = {
-          ticker: item.ticker,
-          page: 1,
-          pageSize: 10,
-        };
+        this.tickerTxQueryParams = params;
         this.$emit('query-ticker-tx', this.tickerTxQueryParams);
       }
     },

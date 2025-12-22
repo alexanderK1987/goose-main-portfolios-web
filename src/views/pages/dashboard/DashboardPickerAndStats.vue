@@ -86,7 +86,7 @@
           style="min-width: 200px;"
         >
           <v-avatar size="44" :color="data.color" rounded class="elevation-1">
-            <v-icon dark color="white" size="30">
+            <v-icon dark color="white" size="30" @click="data.clickCallback && data.clickCallback()">
               {{ data.icon }}
             </v-icon>
           </v-avatar>
@@ -109,6 +109,78 @@
         </div>
       </div>
     </v-card-text>
+    <v-dialog
+      v-model="showPrincipalActions"
+      :close-on-content-click="false"
+      max-width="380"
+      min-width="340"
+      style="overflow-y: hidden;"
+    >
+      <v-card v-if="principalActionQueryParams" :loading="principalActionsLoading" class="d-flex flex-column" height="600" style="overflow-y: hidden;">
+        <v-card-text class="white--text info py-2 px-4 d-flex justify-space-between align-center">
+          <span class="font-weight-bold">Principal adjustment events</span>
+          <v-icon small @click="showPrincipalActions = false">
+            {{ icons.mdiClose }}
+          </v-icon>
+        </v-card-text>
+        <v-btn
+          :disabled="principalActionQueryParams.page === 1"
+          max-height="2em"
+          x-small
+          block
+          class="text-center py-0"
+          @click="flipPrincipalPage(-1)"
+        >
+          <v-icon>{{ icons.mdiTriangleSmallUp }}</v-icon>
+        </v-btn>
+        <v-card-text
+          v-if="Array.isArray(principalActionPagedTxs.results)"
+          class="caption px-0 pb-0 mb-0 flex-grow-1"
+        >
+          <v-overlay v-model="principalActionsLoading" absolute opacity="0.80">
+            <v-progress-circular indeterminate />
+          </v-overlay>
+
+          <div v-for="tickerTx in principalActionPagedTxs.results" :key="tickerTx._id" class="px-3">
+            <v-row no-gutters>
+              <v-col cols="7" class="text-sm d-flex align-center py-3">
+                <samp>{{ tickerTx.timestamp.split('T')[0] }}</samp>
+                <v-btn
+                  x-small
+                  outlined
+                  :class="['text-xs', 'text-uppercase', 'ms-2 px-2 py-0']" dark
+                  :color="getActionColor(tickerTx.action)"
+                >
+                  {{ tickerTx.action }}
+                </v-btn>
+              </v-col>
+              <v-col cols="5" class="d-flex align-center caption">
+                <div
+                  v-if="['deposit', 'withdraw', 'interest'].includes(tickerTx.action)"
+                  class="d-flex flex-column secondary--text"
+                >
+                  <samp v-if="tickerTx.action=='interest'" class="text--secondary">{{ toCurrency(tickerTx.quantity) }}</samp>
+                  <samp v-else class="text-base text--primary font-weight-bold">{{ toCurrency(tickerTx.quantity) }}</samp>
+                  <span v-if="tickerTx.remarks">{{ tickerTx.remarks }}</span>
+                </div>
+              </v-col>
+            </v-row>
+            <v-divider />
+          </div>
+        </v-card-text>
+        <v-spacer />
+        <v-btn
+          :disabled="!principalActionPagedTxs.hasMore"
+          x-small
+          max-height="2em"
+          block
+          class="text-center py-0"
+          @click="flipPrincipalPage(1)"
+        >
+          <v-icon>{{ icons.mdiTriangleSmallDown }}</v-icon>
+        </v-btn>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -128,9 +200,12 @@ import {
   mdiTimerSand,
   mdiEyeOffOutline,
   mdiEyeOutline,
+  mdiClose,
+  mdiTriangleSmallUp,
+  mdiTriangleSmallDown,
 } from '@mdi/js';
 import {
-  toCurrency, toPercentage, toLocaleDateString, toAgeString, getTrendColor, formatSecondsToTime,
+  toCurrency, toPercentage, toLocaleDateString, toAgeString, getTrendColor, formatSecondsToTime, getActionColor,
 } from '@/utils/numberTools';
 
 export default {
@@ -164,8 +239,17 @@ export default {
       type: Boolean,
       default: false,
     },
+    principalActionPagedTxs: {
+      type: Object,
+      default: () => ({}),
+    },
+    principalActionsLoading: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: () => ({
+    getActionColor,
     toCurrency,
     toLocaleDateString,
     formatSecondsToTime,
@@ -178,7 +262,11 @@ export default {
     timeToNextRefresh: 0,
     reactiveTicker: 0,
     countdownInterval: null,
+    showPrincipalActions: false,
+    principalActionQueryParams: {},
     icons: {
+      mdiTriangleSmallUp,
+      mdiTriangleSmallDown,
       mdiTrendingUp,
       mdiTrendingDown,
       mdiTrendingNeutral,
@@ -193,7 +281,7 @@ export default {
       mdiRefresh,
       mdiEyeOffOutline,
       mdiEyeOutline,
-
+      mdiClose,
     },
   }),
   computed: {
@@ -238,6 +326,7 @@ export default {
           content: this.hidePortfolioValues ? '$###,###.##' : toCurrency(principals),
           icon: mdiPiggyBank,
           color: 'info',
+          clickCallback: this.popPrincipalActionDialog,
         },
         {
           title: 'Profit/Loss',
@@ -265,6 +354,22 @@ export default {
     },
   },
   methods: {
+    flipPrincipalPage(offset) {
+      this.principalActionQueryParams.page += offset;
+      this.$emit('query-principal-actions', this.principalActionQueryParams);
+    },
+    popPrincipalActionDialog() {
+      this.showPrincipalActions = true;
+      const params = {
+        ticker: '$USDCASH',
+        page: 1,
+        pageSize: 10,
+      };
+      if (JSON.stringify(params) !== JSON.stringify(this.principalActionQueryParams)) {
+        this.principalActionQueryParams = params;
+        this.$emit('query-principal-actions', this.principalActionQueryParams);
+      }
+    },
     getTrendDiffIcon(diffPercentages) {
       return diffPercentages > 0.1e-2
         ? this.icons.mdiTrendingUp

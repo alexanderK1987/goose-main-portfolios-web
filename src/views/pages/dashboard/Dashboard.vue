@@ -8,11 +8,14 @@
         :last-market-day-data="lastMarketDayData || {}"
         :penultimate-market-day-data="penultimateMarketDayData || {}"
         :loading="loading"
+        :principal-actions-loading="tickerPagedTxLoading"
+        :principal-action-paged-txs="tickerPagedTxs"
         :hide-portfolio-values="hidePortfolioValues"
         class="flex-grow-1 fill-height"
         @pick-portfolio="pickPortfolioByIndex($event)"
         @trigger-refresh="triggerRefresh()"
-        @toggleHideValues="hidePortfolioValues = !hidePortfolioValues"
+        @toggle-hide-values="hidePortfolioValues = !hidePortfolioValues"
+        @query-principal-actions="queryTickerTxs($event)"
       />
     </v-col>
     <v-col cols="12" md="4" class="d-flex flex-column">
