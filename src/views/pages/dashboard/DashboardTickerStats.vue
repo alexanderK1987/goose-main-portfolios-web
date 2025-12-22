@@ -7,7 +7,7 @@
       min-width="340"
       style="overflow-y: hidden;"
     >
-      <v-card v-if="menuTargetItem" :loading="tickerPagedTxLoading" class="py-1 d-flex flex-column" height="600" style="overflow-y: hidden;">
+      <v-card v-if="menuTargetItem" :loading="tickerPagedTxLoading" class="d-flex flex-column" height="600" style="overflow-y: hidden;">
         <v-card-text class="white--text info py-2 px-4 d-flex justify-space-between align-center">
           <span><span class="font-weight-bold">{{ menuTargetItem.ticker }}</span> - transaction history</span>
           <v-icon small @click="showTickerTxHistory = false">
