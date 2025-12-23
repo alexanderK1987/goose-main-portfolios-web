@@ -594,7 +594,7 @@ export default {
     },
     getGainPercentages(item) {
       if (item.vClose > 1e-5) {
-        return (item.vClose + item.sumDividend - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumCost) - 1.0;
+        return (item.vClose + item.sumRevenue + item.sumDividend - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumCost) - 1.0;
       }
 
       return (item.sumRevenue + item.sumDividend - item.sumTaxCgain - item.sumTaxDividend - item.sumTxFee) / (item.sumCost) - 1.0;
