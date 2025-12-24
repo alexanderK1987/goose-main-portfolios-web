@@ -59,16 +59,8 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem(siteConfig.localStorageKeys.auth.refreshTokenStorageKey);
       const REFRESH_URL = `${siteConfig.gooseApiUrl}${siteConfig.endpoints.userRefresh}`;
 
-      // Helper function to handle redirection safely
       const redirectToLogin = () => {
-        if (router.currentRoute.path !== '/pages/login') {
-          router.push('/pages/login').catch(err => {
-            // Ignore the "Navigation cancelled" or "Duplicated navigation" errors
-            if (err.name !== 'NavigationDuplicated' && !err.message.includes('cancelled')) {
-              console.error(err);
-            }
-          });
-        }
+        window.location.href = siteConfig.loginPageUrl;
       };
 
       if (!refreshToken) {

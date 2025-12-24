@@ -1,8 +1,9 @@
+const { default: siteConfig } = require('.siteConfig');
 const { mergeSassVariables } = require('@vuetify/cli-plugin-utils');
-
+siteConfig
 module.exports = {
   // path set according to nginx serving location path
-  publicPath: process.env.NODE_ENV === 'production' ? '/goose-tracker' : '/',
+  publicPath: siteConfig.publicPath,
   transpileDependencies: ['vuetify'],
   chainWebpack: config => {
     const modules = ['vue-modules', 'vue', 'normal-modules', 'normal'];
