@@ -1,6 +1,6 @@
-const { default: siteConfig } = require('.siteConfig');
 const { mergeSassVariables } = require('@vuetify/cli-plugin-utils');
-siteConfig
+const siteConfig = require('./.siteConfig');
+
 module.exports = {
   // path set according to nginx serving location path
   publicPath: siteConfig.publicPath,

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import router from '@/router';
 import siteConfig from '@/../.siteConfig';
 
 const api = axios.create({
